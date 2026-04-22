@@ -1,54 +1,67 @@
 export interface UIRefs {
   header: HTMLElement;
-  toolbar: HTMLElement;
+  menuButton: HTMLButtonElement;
+  undoButton: HTMLButtonElement;
+  redoButton: HTMLButtonElement;
   canvas: HTMLCanvasElement;
   canvasWrap: HTMLElement;
-  sizePanel: HTMLElement;
-  colorPanel: HTMLElement;
-  palettePanel: HTMLElement;
-  layerPanel: HTMLElement;
-  exportPanel: HTMLElement;
+  toolbar: HTMLElement;
+  paletteButton: HTMLButtonElement;
+  layerButton: HTMLButtonElement;
+  sizeButton: HTMLButtonElement;
+  exportButton: HTMLButtonElement;
   statusBar: HTMLElement;
 }
 
-/** 루트 DOM 안에 앱의 기본 UI 구조를 생성하고 각 영역의 엘리먼트 참조를 반환한다. */
+/**
+ * dotpict 풍의 단순한 수직 레이아웃:
+ *   상단 헤더 | 풀폭 캔버스 | 도구 + 패널 트리거 바 | 상태표시줄
+ * 색상·레이어·크기·내보내기 패널은 모두 팝오버로 띄운다.
+ */
 export function buildUILayout(root: HTMLElement): UIRefs {
   root.innerHTML = '';
   root.classList.add('pm-root');
 
-  const header = create('header', 'pm-header', 'PixelMaster');
-  const main = create('div', 'pm-main');
-  const toolbar = create('aside', 'pm-toolbar');
+  const header = create('header', 'pm-header');
+  const menuButton = iconButton('☰', 'Menu');
+  const title = create('span', 'pm-title', 'PixelMaster');
+  const headerSpacer = create('span', 'pm-header-spacer');
+  const undoButton = iconButton('↶', 'Undo');
+  const redoButton = iconButton('↷', 'Redo');
+  header.append(menuButton, title, headerSpacer, undoButton, redoButton);
+
   const canvasWrap = create('main', 'pm-canvas-wrap');
   const canvas = document.createElement('canvas');
   canvas.id = 'app-canvas';
   canvas.className = 'pm-canvas';
   canvasWrap.appendChild(canvas);
 
-  const rightPanel = create('aside', 'pm-right-panel');
-  const sizePanel = create('section', 'pm-size-panel');
-  const colorPanel = create('section', 'pm-color-panel');
-  const palettePanel = create('section', 'pm-palette-panel');
-  const layerPanel = create('section', 'pm-layer-panel');
-  const exportPanel = create('section', 'pm-export-panel');
-  rightPanel.append(sizePanel, colorPanel, palettePanel, layerPanel, exportPanel);
-
-  main.append(toolbar, canvasWrap, rightPanel);
+  const bottomBar = create('div', 'pm-bottom-bar');
+  const toolbar = create('nav', 'pm-toolbar');
+  const extras = create('div', 'pm-toolbar-extras');
+  const paletteButton = iconButton('🎨', 'Palette');
+  const layerButton = iconButton('📑', 'Layers');
+  const sizeButton = iconButton('📐', 'Canvas size');
+  const exportButton = iconButton('💾', 'Export');
+  extras.append(paletteButton, layerButton, sizeButton, exportButton);
+  bottomBar.append(toolbar, extras);
 
   const statusBar = create('footer', 'pm-status-bar');
 
-  root.append(header, main, statusBar);
+  root.append(header, canvasWrap, bottomBar, statusBar);
 
   return {
     header,
-    toolbar,
+    menuButton,
+    undoButton,
+    redoButton,
     canvas,
     canvasWrap,
-    sizePanel,
-    colorPanel,
-    palettePanel,
-    layerPanel,
-    exportPanel,
+    toolbar,
+    paletteButton,
+    layerButton,
+    sizeButton,
+    exportButton,
     statusBar,
   };
 }
@@ -58,4 +71,14 @@ function create(tag: string, className: string, text?: string): HTMLElement {
   el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
+}
+
+function iconButton(emoji: string, label: string): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'pm-icon-btn';
+  b.textContent = emoji;
+  b.title = label;
+  b.setAttribute('aria-label', label);
+  return b;
 }

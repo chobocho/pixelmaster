@@ -11,11 +11,11 @@
       --panel-2: #363636;
       --border: #111;
       --accent: #3b82f6;
+      --danger: #b93b3b;
       --fg: #dddddd;
+      --muted: #9a9a9a;
     }
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
     html, body {
       margin: 0;
       padding: 0;
@@ -25,181 +25,267 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow: hidden;
     }
+    button { cursor: pointer; font-family: inherit; }
     #app, .pm-root {
       display: flex;
       flex-direction: column;
       height: 100vh;
-      /* 모바일 주소창 높이 변동을 반영 (지원 브라우저 한정). */
       height: 100dvh;
     }
+
+    /* ── Header ─────────────────────────────────────────── */
     .pm-header {
-      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
-      font-size: 14px;
-      font-weight: 600;
+      flex: 0 0 auto;
     }
-    .pm-main {
-      flex: 1 1 auto;
-      display: flex;
-      min-height: 0;
-    }
-    .pm-toolbar {
-      width: 44px;
-      background: var(--panel);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 6px 4px;
-    }
-    .pm-toolbar button {
-      width: 36px;
-      height: 36px;
-      font-size: 18px;
-      background: var(--panel-2);
-      color: var(--fg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .pm-toolbar button.active {
-      background: var(--accent);
-      color: white;
-    }
+    .pm-title { font-size: 14px; font-weight: 600; }
+    .pm-header-spacer { flex: 1 1 auto; }
+
+    /* ── Canvas ─────────────────────────────────────────── */
     .pm-canvas-wrap {
       flex: 1 1 auto;
-      min-width: 0;
       min-height: 0;
       display: flex;
-      align-items: stretch;
       background: #111;
     }
     .pm-canvas {
       flex: 1 1 auto;
       display: block;
+      width: 100%;
+      height: 100%;
       image-rendering: pixelated;
       touch-action: none;
     }
-    .pm-right-panel {
-      width: 240px;
-      background: var(--panel);
-      border-left: 1px solid var(--border);
+
+    /* ── Bottom bar (tools + popup triggers) ───────────── */
+    .pm-bottom-bar {
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
-      padding: 8px;
-      gap: 10px;
-      overflow-y: auto;
+      gap: 4px;
+      padding: 4px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
     }
-    .pm-right-panel section {
+    .pm-toolbar {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+      overflow-x: auto;
+    }
+    .pm-toolbar-extras {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    /* ── Status bar ─────────────────────────────────────── */
+    .pm-status-bar {
+      padding: 4px 10px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    /* ── Icon button ────────────────────────────────────── */
+    .pm-icon-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 8px;
       background: var(--panel-2);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 8px;
+      color: var(--fg);
+      font-size: 16px;
+      flex: 0 0 auto;
+    }
+    .pm-icon-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .pm-toolbar button {
+      min-width: 36px;
+      height: 36px;
+      font-size: 16px;
+      background: var(--panel-2);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      flex: 0 0 auto;
+    }
+    .pm-toolbar button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* ── Popover (bottom sheet) ─────────────────────────── */
+    .pm-popover-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 900;
+      padding: 12px;
+    }
+    .pm-popover-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px 10px 6px 6px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 78dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    .pm-popover-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pm-popover-title {
+      flex: 1 1 auto;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .pm-popover-close {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--fg);
+    }
+    .pm-popover-content {
+      padding: 10px 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .panel-header {
       display: flex;
       align-items: center;
       gap: 6px;
       font-weight: 600;
-      margin-bottom: 6px;
+      font-size: 13px;
+      margin-bottom: 4px;
     }
     .panel-header > span { flex: 1 1 auto; }
+
+    /* ── Palette ────────────────────────────────────────── */
     .swatches {
       display: flex;
       gap: 6px;
       margin-bottom: 6px;
     }
     .swatch {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border: 1px solid var(--border);
       border-radius: 4px;
+      position: relative;
     }
-    .swatch.fg::after { content: 'FG'; color: #fff; text-shadow: 0 0 2px #000; }
-    .swatch.bg::after { content: 'BG'; color: #fff; text-shadow: 0 0 2px #000; }
+    .swatch.fg::after, .swatch.bg::after {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 0 0 2px #000;
+    }
+    .swatch.fg::after { content: 'FG'; }
+    .swatch.bg::after { content: 'BG'; }
     .hex-input {
       width: 100%;
       background: var(--bg);
       color: var(--fg);
       border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 3px 6px;
+      padding: 5px 6px;
       font-family: monospace;
-      box-sizing: border-box;
-      margin-bottom: 6px;
     }
     .palette-grid {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      gap: 2px;
+      gap: 3px;
     }
     .palette-cell {
       aspect-ratio: 1 / 1;
       border: 1px solid var(--border);
       cursor: pointer;
+      min-height: 24px;
     }
+
+    /* ── Layers ─────────────────────────────────────────── */
     .layer-list {
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      max-height: 180px;
+      gap: 3px;
+      max-height: 280px;
       overflow-y: auto;
     }
     .layer-row {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px;
+      gap: 6px;
+      padding: 5px 6px;
       background: var(--bg);
       border-radius: 3px;
       cursor: pointer;
     }
-    .layer-row.active {
-      outline: 1px solid var(--accent);
-    }
+    .layer-row.active { outline: 1px solid var(--accent); }
     .layer-visibility {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       font-size: 13px;
       background: transparent;
       border: 1px solid var(--border);
       color: var(--fg);
-      cursor: pointer;
     }
-    .layer-name { flex: 1 1 auto; font-size: 12px; }
-    .layer-opacity { width: 70px; }
-    .export-buttons {
-      display: flex;
-      gap: 4px;
-    }
-    .export-buttons button {
-      flex: 1 1 0;
-      padding: 4px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--fg);
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    .pm-status-bar {
-      padding: 4px 12px;
-      background: var(--panel);
-      border-top: 1px solid var(--border);
-      font-family: monospace;
-      font-size: 12px;
-    }
-    button { cursor: pointer; }
+    .layer-name { flex: 1 1 auto; font-size: 13px; }
+    .layer-opacity { width: 80px; }
 
+    /* ── Size select ────────────────────────────────────── */
     .size-select {
       width: 100%;
       background: var(--bg);
       color: var(--fg);
       border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 4px 6px;
-      font-size: 13px;
+      padding: 6px 8px;
+      font-size: 14px;
     }
 
+    /* ── Export ─────────────────────────────────────────── */
+    .export-buttons {
+      display: flex;
+      gap: 4px;
+    }
+    .export-buttons button {
+      flex: 1 1 0;
+      padding: 6px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      border-radius: 3px;
+    }
+
+    /* ── Confirmation modal ─────────────────────────────── */
     .pm-modal-overlay {
       position: fixed;
       inset: 0;
@@ -220,10 +306,7 @@
       width: 100%;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
-    .pm-modal-title {
-      margin: 0 0 8px 0;
-      font-size: 15px;
-    }
+    .pm-modal-title { margin: 0 0 8px 0; font-size: 15px; }
     .pm-modal-message {
       margin: 0 0 14px 0;
       font-size: 13px;
@@ -250,62 +333,9 @@
       color: white;
     }
     .pm-modal-button-danger {
-      background: #b93b3b;
+      background: var(--danger);
       border-color: #862828;
       color: white;
-    }
-
-    /* 좁은 화면 (폴드 접힌 상태, 좁은 태블릿 모드 등) 대응.
-       원칙: 본문 스크롤 없음, 뷰포트 안에 모든 UI 가 항상 보여야 한다.
-       - 툴바: 상단 가로 한 줄 (넘치면 툴바 내부만 가로 스크롤)
-       - 캔버스: 남는 공간 전부 (flex 1 1 auto)
-       - 우측 패널: 하단으로 이동, max-height 제한 + 내부 스크롤 */
-    @media (max-width: 800px) {
-      html, body { overflow: hidden; }
-      #app, .pm-root {
-        height: 100dvh;
-      }
-      .pm-main {
-        flex-direction: column;
-        min-height: 0;
-        overflow: hidden;
-      }
-      .pm-toolbar {
-        width: 100%;
-        flex: 0 0 auto;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: 2px;
-        padding: 4px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-      .pm-toolbar button {
-        width: 34px;
-        height: 34px;
-        font-size: 16px;
-        flex: 0 0 auto;
-      }
-      .pm-canvas-wrap {
-        flex: 1 1 auto;
-        min-height: 0;
-        width: 100%;
-      }
-      .pm-right-panel {
-        width: 100%;
-        flex: 0 0 auto;
-        max-height: 45dvh;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        overflow-y: auto;
-      }
-      .palette-grid {
-        grid-template-columns: repeat(16, 1fr);
-      }
-      .layer-list {
-        max-height: 120px;
-      }
     }
   </style>
 </head>

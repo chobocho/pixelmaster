@@ -37,6 +37,7 @@ import { StatusBar } from './ui/StatusBar.js';
 import { SizePanel } from './ui/SizePanel.js';
 import { showModal } from './ui/Modal.js';
 import { PngExporter } from './io/PngExporter.js';
+import { Popover } from './ui/Popover.js';
 
 const DEFAULT_SIZE: CanvasSize = 32;
 const TOOL_KEY_BINDINGS: ReadonlyArray<readonly [string, ToolId]> = [
@@ -113,15 +114,34 @@ export class App {
 
     const refreshUI = (): void => this.refreshUI();
     this.toolbar = new Toolbar(ui.toolbar, this.toolManager, refreshUI);
-    this.palette = new PalettePanel(ui.colorPanel, this.state, refreshUI);
-    this.layerPanel = new LayerPanel(ui.layerPanel, this.state, refreshUI);
-    new ExportPanel(ui.exportPanel, this.state);
     this.statusBar = new StatusBar(ui.statusBar);
-    // Palette panel hosts both FG/BG swatches and grid in colorPanel;
-    // We also render a minimal palette grid inside palettePanel for space.
-    new PalettePanel(ui.palettePanel, this.state, refreshUI);
-    this.sizePanel = new SizePanel(ui.sizePanel, this.state.size, (next) => {
+
+    // 패널들은 모두 팝오버 안에서 동작한다. 팝오버를 닫아도 DOM 은 유지되어
+    // 이벤트 리스너와 상태가 보존된다.
+    const palettePopover = new Popover('Palette');
+    this.palette = new PalettePanel(palettePopover.content, this.state, refreshUI);
+
+    const layerPopover = new Popover('Layers');
+    this.layerPanel = new LayerPanel(layerPopover.content, this.state, refreshUI);
+
+    const sizePopover = new Popover('Canvas Size');
+    this.sizePanel = new SizePanel(sizePopover.content, this.state.size, (next) => {
+      sizePopover.close();
       this.requestSizeChange(next);
+    });
+
+    const exportPopover = new Popover('Export');
+    new ExportPanel(exportPopover.content, this.state);
+
+    ui.paletteButton.addEventListener('click', () => palettePopover.toggle());
+    ui.layerButton.addEventListener('click', () => layerPopover.toggle());
+    ui.sizeButton.addEventListener('click', () => sizePopover.toggle());
+    ui.exportButton.addEventListener('click', () => exportPopover.toggle());
+    ui.undoButton.addEventListener('click', () => this.undo());
+    ui.redoButton.addEventListener('click', () => this.redo());
+    ui.menuButton.addEventListener('click', () => {
+      this.toggleGrid();
+      this.refreshUI();
     });
 
     void this.loadLatestProject();
