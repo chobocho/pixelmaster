@@ -134,3 +134,56 @@ test('flattenAll produces a single layer with composited pixels', () => {
   assert.deepEqual(m.getLayer(0).pixels.getPixel(0, 0), BLUE);
   assert.deepEqual(m.getLayer(0).pixels.getPixel(1, 1), RED);
 });
+
+test('moveLayer from==to is a no-op', () => {
+  const m = new LayerManager(16);
+  const a = m.addLayer('A');
+  m.addLayer('B');
+  m.setActive(0);
+  m.moveLayer(0, 0);
+  assert.equal(m.getLayer(0), a);
+  assert.equal(m.activeIndex, 0);
+});
+
+test('moveLayer rejects out-of-range destination', () => {
+  const m = new LayerManager(16);
+  m.addLayer();
+  m.addLayer();
+  assert.throws(() => m.moveLayer(0, 5), RangeError);
+  assert.throws(() => m.moveLayer(0, -1), RangeError);
+});
+
+test('moveLayer rejects out-of-range source', () => {
+  const m = new LayerManager(16);
+  m.addLayer();
+  assert.throws(() => m.moveLayer(5, 0), RangeError);
+});
+
+test('LayerManager.resize resizes every layer and records new canvasSize', () => {
+  const m = new LayerManager(16);
+  const a = m.addLayer();
+  const b = m.addLayer();
+  a.pixels.setPixel(0, 0, RED);
+  b.pixels.setPixel(15, 15, BLUE);
+  m.resize(32, 'preserve');
+  assert.equal(m.canvasSize, 32);
+  assert.equal(a.pixels.width, 32);
+  assert.equal(b.pixels.width, 32);
+  assert.deepEqual(a.pixels.getPixel(0, 0), RED);
+  assert.deepEqual(b.pixels.getPixel(15, 15), BLUE);
+  assert.deepEqual(a.pixels.getPixel(16, 16), { r: 0, g: 0, b: 0, a: 0 });
+});
+
+test('LayerManager.restoreSnapshot rejects mismatched pixel data length', () => {
+  const m = new LayerManager(16);
+  m.addLayer();
+  const badData = new Uint8ClampedArray(4); // wrong length
+  assert.throws(
+    () =>
+      m.restoreSnapshot({
+        activeIndex: 0,
+        layers: [{ name: 'bad', visible: true, opacity: 1, data: badData }],
+      }),
+    /length/,
+  );
+});

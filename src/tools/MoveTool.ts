@@ -74,13 +74,11 @@ export class MoveTool implements Tool {
 
   private static extractPixels(canvas: PixelCanvas, rect: SelectionRect): Uint8ClampedArray {
     const out = new Uint8ClampedArray(rect.width * rect.height * 4);
-    const stride = canvas.width * 4;
     for (let row = 0; row < rect.height; row++) {
       const srcStart = ((rect.y + row) * canvas.width + rect.x) * 4;
       const dstStart = row * rect.width * 4;
       out.set(canvas.data.subarray(srcStart, srcStart + rect.width * 4), dstStart);
     }
-    void stride;
     return out;
   }
 

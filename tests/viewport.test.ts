@@ -87,3 +87,20 @@ test('Viewport toggleGrid flips showGrid', () => {
   vp.toggleGrid();
   assert.equal(vp.showGrid, true);
 });
+
+test('Viewport zoomAt when clamped to no-op does not shift offset', () => {
+  const vp = new Viewport();
+  vp.setZoom(MAX_ZOOM);
+  vp.setOffset(100, 100);
+  vp.zoomAt(10, 200, 200); // already at MAX, should no-op
+  assert.equal(vp.zoom, MAX_ZOOM);
+  assert.equal(vp.offsetX, 100);
+  assert.equal(vp.offsetY, 100);
+});
+
+test('Viewport fitToViewport handles grid larger than viewport by clamping to MIN_ZOOM', () => {
+  const vp = new Viewport();
+  // 192 grid, 100px viewport: min ratio ~0.52 → floor → 0 → clamp to MIN_ZOOM (1)
+  vp.fitToViewport(100, 100, 192, 192);
+  assert.equal(vp.zoom, MIN_ZOOM);
+});

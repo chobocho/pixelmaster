@@ -83,3 +83,32 @@ test('MoveTool ignores non-left button', () => {
   assert.deepEqual(c.getPixel(3, 3), RED);
   assert.deepEqual(sel.rect, { x: 3, y: 3, width: 1, height: 1 });
 });
+
+test('MoveTool with no net displacement leaves pixels unchanged', () => {
+  const c = new PixelCanvas(16);
+  c.setPixel(5, 5, RED);
+  const sel = new Selection();
+  sel.setRect({ x: 5, y: 5, width: 1, height: 1 });
+  const tool = new MoveTool();
+  const ctx = makeCtx(c, sel);
+  tool.onPointerDown(ctx, { x: 5, y: 5, button: 'left' });
+  tool.onPointerUp(ctx, { x: 5, y: 5, button: 'left' });
+  assert.deepEqual(c.getPixel(5, 5), RED);
+  assert.deepEqual(sel.rect, { x: 5, y: 5, width: 1, height: 1 });
+});
+
+test('MoveTool clips destination pixels that go past canvas edge', () => {
+  const c = new PixelCanvas(16);
+  c.setPixel(0, 0, RED);
+  c.setPixel(1, 0, RED);
+  const sel = new Selection();
+  sel.setRect({ x: 0, y: 0, width: 2, height: 1 });
+  const tool = new MoveTool();
+  const ctx = makeCtx(c, sel);
+  // move so that x=1 lands at x=16 (out of bounds) and x=0 lands at x=15
+  tool.onPointerDown(ctx, { x: 0, y: 0, button: 'left' });
+  tool.onPointerUp(ctx, { x: 15, y: 0, button: 'left' });
+  assert.deepEqual(c.getPixel(15, 0), RED);
+  assert.deepEqual(c.getPixel(0, 0), TRANSPARENT);
+  // the second pixel had no valid destination; it is simply dropped
+});

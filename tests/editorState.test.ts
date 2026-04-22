@@ -43,3 +43,31 @@ test('EditorState setForegroundColor copies components defensively', () => {
   assert.deepEqual(s.foregroundColor, c);
   assert.notStrictEqual(s.foregroundColor, c);
 });
+
+test('EditorState.isEmpty is true for a fresh state and false after painting', () => {
+  const s = new EditorState(16);
+  assert.equal(s.isEmpty(), true);
+  s.activeCanvas.setPixel(0, 0, RED);
+  assert.equal(s.isEmpty(), false);
+});
+
+test('EditorState.isEmpty treats alpha=0 pixels as empty even when RGB is set', () => {
+  const s = new EditorState(16);
+  s.activeCanvas.setPixel(0, 0, { r: 255, g: 0, b: 0, a: 0 });
+  assert.equal(s.isEmpty(), true);
+});
+
+test('EditorState.updateComposite blends layers with opacity', () => {
+  const s = new EditorState(16);
+  s.activeCanvas.fill({ r: 0, g: 0, b: 255, a: 255 }); // bottom: blue
+  s.layers.addLayer();
+  s.layers.setActive(1);
+  s.activeCanvas.fill(RED); // top: red
+  s.layers.setOpacity(1, 0.5);
+  s.updateComposite();
+  const px = s.compositeBuffer.getPixel(0, 0);
+  // 0.5 red over opaque blue → mixed RGB, alpha 255
+  assert.equal(px.a, 255);
+  assert.ok(px.r > 100 && px.r < 200, `mid-red expected, got ${px.r}`);
+  assert.ok(px.b > 100 && px.b < 200, `mid-blue expected, got ${px.b}`);
+});

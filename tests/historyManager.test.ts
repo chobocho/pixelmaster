@@ -85,3 +85,27 @@ test('HistoryManager rejects non-positive maxSteps', () => {
   assert.throws(() => new HistoryManager(0), /positive/);
   assert.throws(() => new HistoryManager(-1), /positive/);
 });
+
+test('HistoryManager interleaved undo/redo/push sequence', () => {
+  const h = new HistoryManager<string>();
+  h.push('A');
+  h.push('B');
+  h.push('C');
+  assert.equal(h.undo(), 'B');
+  assert.equal(h.redo(), 'C');
+  h.push('D'); // clears future
+  assert.equal(h.canRedo(), false);
+  assert.equal(h.undo(), 'C');
+  assert.equal(h.undo(), 'B');
+  assert.equal(h.redo(), 'C');
+  assert.equal(h.redo(), 'D');
+});
+
+test('HistoryManager capacity=1 never permits undo', () => {
+  const h = new HistoryManager<number>(1);
+  h.push(1);
+  h.push(2);
+  h.push(3);
+  assert.equal(h.canUndo(), false);
+  assert.equal(h.undoDepth, 0);
+});

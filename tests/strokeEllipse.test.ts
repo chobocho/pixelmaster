@@ -54,3 +54,24 @@ test('strokeEllipse does not fill interior', () => {
   // center (10,10) should be empty
   assert.ok(!s.has('10,10'));
 });
+
+test('strokeEllipse handles reversed bbox corners', () => {
+  const forward = collect(2, 2, 10, 8);
+  const reversed = collect(10, 8, 2, 2);
+  assert.deepEqual(reversed, forward);
+});
+
+test('strokeEllipse flat bbox (height=0) still plots a horizontal span', () => {
+  const s = collect(0, 3, 10, 3);
+  assert.ok(s.has('0,3'));
+  assert.ok(s.has('10,3'));
+});
+
+test('strokeEllipse flat bbox (width=0) produces only x=5 pixels without crashing', () => {
+  const s = collect(5, 0, 5, 10);
+  assert.ok(s.size > 0);
+  for (const key of s) {
+    const [xs] = key.split(',');
+    assert.equal(xs, '5');
+  }
+});

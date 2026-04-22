@@ -61,3 +61,24 @@ test('compositeOver rejects mismatched sizes', () => {
   const dst = new PixelCanvas(32);
   assert.throws(() => compositeOver(src, dst, 1), /size mismatch/);
 });
+
+test('compositeOver semi-transparent src over transparent dst yields src color with scaled alpha', () => {
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
+  src.fill({ r: 255, g: 0, b: 0, a: 128 });
+  compositeOver(src, dst, 1);
+  approxEqual(dst.getPixel(0, 0), { r: 255, g: 0, b: 0, a: 128 }, 2);
+});
+
+test('compositeOver accumulates alpha when stacking two semi-transparent layers', () => {
+  const bottom = new PixelCanvas(16);
+  const top = new PixelCanvas(16);
+  const out = new PixelCanvas(16);
+  bottom.fill({ r: 0, g: 0, b: 0, a: 128 });
+  top.fill({ r: 0, g: 0, b: 0, a: 128 });
+  compositeOver(bottom, out, 1);
+  compositeOver(top, out, 1);
+  // 0.5 + 0.5 * 0.5 = 0.75 → ~191
+  const a = out.getPixel(0, 0).a;
+  assert.ok(a > 180 && a < 200, `expected ~191, got ${a}`);
+});
