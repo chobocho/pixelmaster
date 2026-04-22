@@ -279,7 +279,7 @@ export class Renderer {
 |---|------|------|
 | 1 | 프로젝트 스캐폴딩 + HiDPI 렌더러 | ✅ DONE |
 | 2 | PixelCanvas 모델 + 캔버스 사이즈 6종 | ✅ DONE |
-| 3 | 연필·지우개 도구 + 마우스 입력 | 🔲 TODO |
+| 3 | 연필·지우개 도구 + 마우스 입력 | ✅ DONE |
 | 4 | 줌 + 그리드·체커보드 렌더러 | 🔲 TODO |
 | 5 | 채우기 도구 (BFS Flood Fill) | 🔲 TODO |
 | 6 | 색상 시스템 (HSV 피커 + 팔레트) | 🔲 TODO |

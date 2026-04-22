@@ -63,3 +63,24 @@
 - `npm test` 24건(Issue #1 8건 + Issue #2 16건) 모두 통과
 - `npm run typecheck` 통과 (strict / noUnusedLocals / exactOptionalPropertyTypes 포함)
 - `npm run build` 통과
+
+### Issue #3 — 연필·지우개 도구 + 마우스 입력
+
+**변경 사항**
+
+- `src/tools/Tool.ts` 추가: `Tool` 인터페이스, `ToolId` 유니온, `ToolContext`, `ToolPointerEvent`, `PointerButton`
+- `src/tools/strokeLine.ts` 추가: Bresenham 직선 알고리즘 (plot 콜백 기반)
+- `src/tools/PencilTool.ts` 추가: 좌클릭=전경색 / 우클릭=배경색, 드래그 시 이전 위치와 직선 연결
+- `src/tools/EraserTool.ts` 추가: 좌클릭으로 TRANSPARENT 덮어쓰기, 드래그 연결
+- `src/tools/ToolManager.ts` 추가: 도구 등록·setActive·포인터 이벤트 디스패치
+- `src/editor/EditorState.ts` 추가: PixelCanvas + foreground/background 색 중앙 보관
+- `src/renderer/PixelBlitter.ts` 추가: 오프스크린 캔버스에 putImageData 후 nearest-neighbor drawImage 로 HTML 캔버스에 블릿
+- `src/ui/pointerMapping.ts` 추가: `mapToPixel`(CSS → 격자), `centeredIntegerFit`(정수 배율 중앙 정렬 blit 영역)
+- `src/app.ts` 리팩터링: EditorState / ToolManager / PixelBlitter 연결, pointerdown/move/up/cancel 바인딩, 우클릭 contextmenu 차단, setPointerCapture 처리
+- 테스트 27건 추가 (strokeLine 6, pencil 7, eraser 3, toolManager 5, pointerMapping 6)
+
+**검증**
+
+- `npm test` 51건 모두 통과
+- `npm run typecheck` 통과
+- `npm run build` 통과
