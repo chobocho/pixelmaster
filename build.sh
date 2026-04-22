@@ -2,11 +2,15 @@
 #
 # build.sh — release/ 폴더에 단일 파일 dist.js 를 만든다.
 #
+# 배포물은 브라우저 실행에 꼭 필요한 것만 포함한다:
+#   - release/index.html  (엔트리)
+#   - release/dist.js     (번들된 앱)
+#
 # 단계:
 #   1) 필요한 devDependency 설치 (최초 1회)
 #   2) 엄격 타입 체크 + 전체 테스트
-#   3) src/main.ts → release/dist.js 로 번들 (esbuild, IIFE)
-#   4) index.html / data 복사 (script 태그는 ./dist.js 로 재작성)
+#   3) src/main.ts → release/dist.js 로 번들 (esbuild, IIFE, no sourcemap)
+#   4) index.html 복사 + script 태그를 ./dist.js 로 재작성
 #
 # 실행:
 #   bash build.sh
@@ -41,24 +45,14 @@ node_modules/.bin/esbuild "$ENTRY" \
   --format=iife \
   --target=es2020 \
   --minify \
-  --sourcemap \
   --legal-comments=none \
   --outfile="$RELEASE_DIR/dist.js"
 
-log "4/4 정적 자산 복사"
-# index.html 의 <script type="module" src="./dist/main.js"> 를
-# <script src="./dist.js"> 로 교체한다.
+log "4/4 index.html 복사 (script 태그 재작성)"
+# <script type="module" src="./dist/main.js"> → <script src="./dist.js">
 sed -e 's|\./dist/main\.js|./dist.js|g' \
     -e 's| type="module"||g' \
     index.html > "$RELEASE_DIR/index.html"
-
-# 참고용 데이터 (내장 팔레트는 코드에 이미 포함되어 있음)
-if [ -d data ]; then
-  cp -R data "$RELEASE_DIR/data"
-fi
-if [ -d assets ]; then
-  cp -R assets "$RELEASE_DIR/assets"
-fi
 
 log "완료: $RELEASE_DIR"
 echo
