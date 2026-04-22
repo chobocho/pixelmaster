@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>PixelMaster</title>
   <style>
     :root {
@@ -29,8 +29,13 @@
     #app, .pm-root {
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
       height: 100vh;
       height: 100dvh;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
     }
 
     /* ── Header ─────────────────────────────────────────── */
@@ -388,11 +393,10 @@
       color: white;
     }
 
-    /* ── Landscape / wide (Fold unfolded 가로 모드 등) ──
-       세로 공간 확보를 위해 도구와 색상 스트립을 양쪽 세로 컬럼으로 이동한다.
-       이 덕분에 캔버스 높이가 커져 128/192 등 큰 사이즈가 더 큰 정수 배율로
-       fit 된다 (예: Fold 857×678 기준 192 가 scale 2 → 3 으로 상승). */
-    @media (min-aspect-ratio: 1/1) {
+    /* ── Large viewport / unfolded foldables ──
+       화면 폭이 넓은 세로 펼침 상태와 가로 모드 모두에서 하단 UI 를 양옆 컬럼으로 옮겨
+       캔버스 높이를 확보한다. */
+    @media (min-width: 640px), (min-aspect-ratio: 1/1) {
       .pm-root {
         display: grid;
         grid-template-rows: auto 1fr auto;

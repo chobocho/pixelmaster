@@ -2,6 +2,22 @@
 
 ## 2026-04-22
 
+### Fold 7 펼침 화면 렌더링 보정
+
+**변경 사항**
+
+- `index.html` viewport 메타에 `viewport-fit=cover` 를 추가하고 safe-area inset padding 을 적용해 펼침 화면 여백 계산을 보정
+- `index.html` 큰 폭 화면(`min-width: 640px`)에서도 도구/팔레트가 좌우 컬럼으로 이동하도록 레이아웃 조건을 확장해 Fold 세로 펼침 상태의 캔버스 높이를 확보
+- `src/renderer/Renderer.ts` 에 `setDevicePixelRatio()` 를 추가해 DPR 변경 시 다음 리사이즈에서 backing store 를 다시 계산하도록 수정
+- `src/app.ts` 가 `visualViewport.resize` 와 현재 DPR 변화를 함께 감지해 폴드 상태 전환 후에도 캔버스 크기와 좌표계를 즉시 다시 동기화하도록 보강
+- `tests/renderer.test.ts` 에 DPR 변경 후 리사이즈가 새 물리 해상도를 반영하는 테스트를 추가
+
+**검증**
+
+- `npm test` 통과
+- `npm run typecheck` 통과
+- `npm run build` 통과
+
 ### Issue #1 — 프로젝트 스캐폴딩 + HiDPI 렌더러
 
 **변경 사항**
