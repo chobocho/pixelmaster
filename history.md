@@ -179,3 +179,25 @@
 **검증**
 
 - `npm test` 160건 모두 통과
+
+### Issue #10 — PNG 내보내기 (원본 + 2x/4x/8x)
+
+**변경 사항**
+
+- 외부 런타임 의존성 금지 규칙을 지키기 위해 PNG 인코더를 직접 작성
+- `src/io/crc32.ts` 추가: 표준 CRC-32/IEEE (PNG 청크 체크섬)
+- `src/io/adler32.ts` 추가: Adler-32 (zlib 스트림 체크섬)
+- `src/io/zlibEncode.ts` 추가: "stored"(비압축) DEFLATE 블록 기반 zlib 스트림
+  (64KB 경계에서 블록 분할, 0x78 0x01 헤더, Adler-32 꼬리)
+- `src/io/pngEncode.ts` 추가: 8-bit RGBA PNG (IHDR + IDAT + IEND, 필터 None)
+- `src/io/upscaleNearest.ts` 추가: PixelCanvas nearest-neighbor 정수 배율 업스케일
+- `src/io/PngExporter.ts` 추가: EditorState → PNG 바이트 / Blob / triggerDownload
+- 테스트 23건 추가
+  - crc32/adler32: 표준 테스트 벡터 (`"123456789"→0xCBF43926`, `"IEND"→0xAE426082`, `"Wikipedia"→0x11E60398`)
+  - zlibEncode: 빈/소/100KB 입력을 node `zlib.inflateSync` 로 역검증
+  - pngEncode: 서명, 청크 순서, IHDR 필드, IDAT decompressed == filter-prefixed scanlines
+  - upscaleNearest / PngExporter: 차원 계산, 합성 결과 반영
+
+**검증**
+
+- `npm test` 183건 모두 통과
