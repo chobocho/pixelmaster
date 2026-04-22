@@ -10,10 +10,12 @@
     "test": "npm run build:test && node --test dist-test/tests/*.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "start": "python3 -m http.server 8001",
-    "clean": "rm -rf dist dist-test"
+    "clean": "rm -rf dist dist-test release",
+    "release": "bash build.sh"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.5.0"
   },
   "repository": {
