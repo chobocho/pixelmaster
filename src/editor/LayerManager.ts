@@ -2,6 +2,7 @@ import type { CanvasSize } from './CanvasSize.js';
 import { Layer } from './Layer.js';
 import { PixelCanvas } from './PixelCanvas.js';
 import { compositeOver } from './composite.js';
+import type { LayerSnapshot } from './snapshot.js';
 
 /**
  * 레이어 순서는 0번이 최하단, 마지막 인덱스가 최상단이다.
@@ -125,6 +126,34 @@ export class LayerManager {
     flattened.pixels.copyFrom(flat);
     this.layers = [flattened];
     this.activeIndexValue = 0;
+  }
+
+  get canvasSize(): CanvasSize {
+    return this.size;
+  }
+
+  /** 스냅샷에서 레이어 목록을 완전히 재구성한다. */
+  restoreSnapshot(snap: { activeIndex: number; layers: readonly LayerSnapshot[] }): void {
+    const rebuilt: Layer[] = snap.layers.map((ls) => {
+      const layer = new Layer(`layer-${this.nextIdSeq++}`, ls.name, this.size);
+      layer.visible = ls.visible;
+      layer.opacity = ls.opacity;
+      if (ls.data.length !== layer.pixels.data.length) {
+        throw new Error(
+          `Snapshot layer data length ${ls.data.length} does not match canvas ${layer.pixels.data.length}`,
+        );
+      }
+      layer.pixels.data.set(ls.data);
+      return layer;
+    });
+    this.layers = rebuilt;
+    if (this.layers.length === 0) {
+      this.activeIndexValue = -1;
+    } else if (snap.activeIndex >= 0 && snap.activeIndex < this.layers.length) {
+      this.activeIndexValue = snap.activeIndex;
+    } else {
+      this.activeIndexValue = 0;
+    }
   }
 
   private assertIndex(index: number): void {

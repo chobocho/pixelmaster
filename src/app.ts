@@ -5,6 +5,8 @@ import { GridRenderer } from './renderer/GridRenderer.js';
 import { Viewport } from './renderer/Viewport.js';
 import { EditorState } from './editor/EditorState.js';
 import type { CanvasSize } from './editor/CanvasSize.js';
+import { HistoryManager } from './editor/HistoryManager.js';
+import type { EditorSnapshot } from './editor/snapshot.js';
 import { ToolManager } from './tools/ToolManager.js';
 import { PencilTool } from './tools/PencilTool.js';
 import { EraserTool } from './tools/EraserTool.js';
@@ -27,6 +29,7 @@ export class App {
   private readonly viewport: Viewport;
   private readonly state: EditorState;
   private readonly toolManager: ToolManager;
+  private readonly history: HistoryManager<EditorSnapshot>;
 
   private running = false;
   private rafHandle = 0;
@@ -52,8 +55,12 @@ export class App {
     this.toolManager.register(new EllipseTool());
     this.toolManager.setActive('pencil');
 
+    this.history = new HistoryManager<EditorSnapshot>();
+    this.history.push(this.state.takeSnapshot());
+
     this.syncToElementSize();
     window.addEventListener('resize', this.syncToElementSize);
+    window.addEventListener('keydown', this.onKeyDown);
     this.bindPointerEvents();
   }
 
@@ -73,6 +80,20 @@ export class App {
 
   toggleGrid(): void {
     this.viewport.toggleGrid();
+  }
+
+  undo(): boolean {
+    const snap = this.history.undo();
+    if (snap === null) return false;
+    this.state.restoreSnapshot(snap);
+    return true;
+  }
+
+  redo(): boolean {
+    const snap = this.history.redo();
+    if (snap === null) return false;
+    this.state.restoreSnapshot(snap);
+    return true;
   }
 
   private bindPointerEvents(): void {
@@ -153,6 +174,20 @@ export class App {
     const button = App.toButton(ev) ?? 'left';
     this.toolManager.onPointerUp(this.buildContext(), { x: pt.x, y: pt.y, button });
     this.lastPixel = null;
+    this.history.push(this.state.takeSnapshot());
+  };
+
+  private readonly onKeyDown = (e: KeyboardEvent): void => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) this.redo();
+      else this.undo();
+    } else if (k === 'y') {
+      e.preventDefault();
+      this.redo();
+    }
   };
 
   private readonly onWheel = (ev: WheelEvent): void => {

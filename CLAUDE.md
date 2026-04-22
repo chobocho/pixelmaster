@@ -285,7 +285,7 @@ export class Renderer {
 | 6 | 색상 시스템 (HSV 피커 + 팔레트) | ✅ DONE |
 | 7 | 선·사각형·원 도구 | ✅ DONE |
 | 8 | 레이어 시스템 | ✅ DONE |
-| 9 | Undo/Redo (히스토리 50단계) | 🔲 TODO |
+| 9 | Undo/Redo (히스토리 50단계) | ✅ DONE |
 | 10 | PNG 내보내기 (원본 + 스케일업) | 🔲 TODO |
 | 11 | IndexedDB 자동저장 + 이어하기 | 🔲 TODO |
 | 12 | UI 레이아웃 + 패널 리사이즈 | 🔲 TODO |

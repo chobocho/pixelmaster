@@ -162,3 +162,20 @@
 **검증**
 
 - `npm test` 146건 모두 통과
+
+### Issue #9 — Undo/Redo 히스토리 (최대 50단계)
+
+**변경 사항**
+
+- `src/editor/snapshot.ts` 추가: `LayerSnapshot`, `EditorSnapshot` 타입
+- `src/editor/HistoryManager.ts` 추가: "after" 스냅샷 모델 범용 스택
+  - push 는 future 를 비움, maxSteps 초과 시 가장 오래된 엔트리 제거
+  - undoDepth / redoDepth getter, clear(), 비-양수 maxSteps 거부
+- `src/editor/LayerManager.ts`: `restoreSnapshot({activeIndex, layers})`,`canvasSize` getter 추가
+- `src/editor/EditorState.ts`: `size` getter, `takeSnapshot()`(전 레이어 defensive copy), `restoreSnapshot()`(사이즈 불일치 throw)
+- `src/app.ts`: HistoryManager 보유, 앱 시작 시 초기 스냅샷 푸시, pointerup 후 스냅샷 푸시, Ctrl+Z=undo / Ctrl+Shift+Z / Ctrl+Y=redo 단축키, `undo()`/`redo()` public 메서드 노출
+- 테스트 14건 추가 (history 9, editorSnapshot 5)
+
+**검증**
+
+- `npm test` 160건 모두 통과
