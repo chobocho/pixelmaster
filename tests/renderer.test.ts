@@ -90,6 +90,19 @@ test('Renderer.resize called multiple times keeps transform consistent', () => {
   assert.equal(scaleCalls.length, 2);
 });
 
+test('Renderer uses updated DPR on the next resize', () => {
+  const { canvas } = createMockCanvas();
+  const renderer = new Renderer(canvas as unknown as HTMLCanvasElement, 2);
+  renderer.resize(100, 100);
+
+  renderer.setDevicePixelRatio(3);
+  renderer.resize(100, 100);
+
+  assert.equal(renderer.devicePixelRatio, 3);
+  assert.equal(canvas.width, 300);
+  assert.equal(canvas.height, 300);
+});
+
 test('Renderer.clear clears using CSS dimensions', () => {
   const { canvas, ctx } = createMockCanvas();
   const renderer = new Renderer(canvas as unknown as HTMLCanvasElement, 2);

@@ -7,27 +7,29 @@
 export class Renderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
-  private readonly dpr: number;
+  private dpr: number;
 
   private cssWidthValue = 0;
   private cssHeightValue = 0;
 
   constructor(canvas: HTMLCanvasElement, devicePixelRatio: number) {
-    if (!(devicePixelRatio > 0) || !Number.isFinite(devicePixelRatio)) {
-      throw new Error(`Invalid devicePixelRatio: ${devicePixelRatio}`);
-    }
     const ctx = canvas.getContext('2d');
     if (ctx === null) {
       throw new Error('Canvas 2D context is not available');
     }
     this.canvas = canvas;
     this.ctx = ctx;
-    this.dpr = devicePixelRatio;
+    this.dpr = validateDevicePixelRatio(devicePixelRatio);
   }
 
   /** 적용된 devicePixelRatio */
   get devicePixelRatio(): number {
     return this.dpr;
+  }
+
+  /** 디바이스 배율이 바뀐 경우 다음 resize 에 반영할 값을 갱신한다. */
+  setDevicePixelRatio(devicePixelRatio: number): void {
+    this.dpr = validateDevicePixelRatio(devicePixelRatio);
   }
 
   /** 현재 CSS 폭(px). resize 전에는 0. */
@@ -69,4 +71,11 @@ export class Renderer {
   clear(): void {
     this.ctx.clearRect(0, 0, this.cssWidthValue, this.cssHeightValue);
   }
+}
+
+function validateDevicePixelRatio(devicePixelRatio: number): number {
+  if (!(devicePixelRatio > 0) || !Number.isFinite(devicePixelRatio)) {
+    throw new Error(`Invalid devicePixelRatio: ${devicePixelRatio}`);
+  }
+  return devicePixelRatio;
 }

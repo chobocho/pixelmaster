@@ -79,6 +79,7 @@ export class App {
 
   private lastSyncedW = 0;
   private lastSyncedH = 0;
+  private lastSyncedDpr = 0;
 
   private projectId = 'default';
   private projectName = 'Untitled';
@@ -91,7 +92,7 @@ export class App {
 
   constructor(ui: UIRefs) {
     const canvas = ui.canvas;
-    const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+    const dpr = App.readDevicePixelRatio();
     this.canvasEl = canvas;
     this.renderer = new Renderer(canvas, dpr);
     this.blitter = new PixelBlitter();
@@ -166,6 +167,7 @@ export class App {
 
     this.syncToElementSize();
     window.addEventListener('resize', this.syncToElementSize);
+    window.visualViewport?.addEventListener('resize', this.syncToElementSize);
     window.addEventListener('keydown', this.onKeyDown);
 
     // 캔버스를 감싼 부모가 리사이즈되면(폴드 펼침, 팝업 조정 등) 즉시 재적용.
@@ -401,6 +403,11 @@ export class App {
     }
   }
 
+  private static readDevicePixelRatio(): number {
+    const dpr = window.devicePixelRatio;
+    return dpr > 0 && Number.isFinite(dpr) ? dpr : 1;
+  }
+
   private buildContext(): ToolContext {
     return {
       canvas: this.state.activeCanvas,
@@ -508,9 +515,11 @@ export class App {
     const parent = this.canvasEl.parentElement;
     const w = parent?.clientWidth ?? 0;
     const h = parent?.clientHeight ?? 0;
+    const dpr = App.readDevicePixelRatio();
     if (w <= 0 || h <= 0) return;
-    if (w === this.lastSyncedW && h === this.lastSyncedH) return;
+    if (w === this.lastSyncedW && h === this.lastSyncedH && dpr === this.lastSyncedDpr) return;
 
+    this.renderer.setDevicePixelRatio(dpr);
     this.renderer.resize(w, h);
     // Renderer 사이즈와 viewport fit 을 같은 동기 호출로 맞춘다.
     // 포인터 이벤트는 항상 현재 cssW/H 기준 region 을 쓰게 되어
@@ -519,6 +528,7 @@ export class App {
     this.needsFit = false;
     this.lastSyncedW = w;
     this.lastSyncedH = h;
+    this.lastSyncedDpr = dpr;
     this.updateStatus();
   };
 
