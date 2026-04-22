@@ -84,3 +84,18 @@
 - `npm test` 51건 모두 통과
 - `npm run typecheck` 통과
 - `npm run build` 통과
+
+### Issue #4 — 줌 + 그리드·체커보드 렌더러
+
+**변경 사항**
+
+- `src/renderer/Viewport.ts` 추가: 줌(1..32) + offset + showGrid, fitToViewport/centerIn, zoomAt(앵커 유지), pan, toggleGrid
+- `src/renderer/CheckerboardRenderer.ts` 추가: 투명 표현용 체커 배경 (CSS 단위 셀)
+- `src/renderer/GridRenderer.ts` 추가: 격자 라인 (scale ≥ 4일 때만, 0.5 오프셋 crisp stroke)
+- `src/app.ts` 업데이트: Viewport 통합, 체커보드 → blit → 그리드 순서로 렌더, wheel 이벤트로 anchor-aware 줌, resize 시 fit 재적용
+- 테스트 14건 추가 (viewport 9, checkerboard 2, grid 3)
+
+**검증**
+
+- `npm test` 65건 모두 통과
+- `npm run build` 통과
