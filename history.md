@@ -259,3 +259,42 @@
 **검증**
 
 - `npm test` 215건 모두 통과
+
+### Issue #14 — GIF 애니메이션 내보내기
+
+**변경 사항**
+
+- PNG 에 이어 GIF 인코더도 외부 런타임 의존성 없이 자체 구현
+- `src/io/gif/colorTable.ts` 추가: RGBA → 인덱스. 알파 < 128 → 투명 슬롯 0, 이후 opaque 고유색 수집. >255 색이면 에러. 팔레트를 2의 거듭제곱으로 패딩, `paletteSizeBits` 헬퍼.
+- `src/io/gif/lzw.ts` 추가: GIF 규격 LZW 인코더
+  - LSB-first BitStream, 코드 크기 증가(2..12), 테이블 가득 시 CLEAR reset
+  - `lzwEncodeGifSubBlocks`: 최대 255바이트 sub-block + 종료 0바이트 래핑
+- `src/io/gif/gifEncode.ts` 추가: GIF89a 전체 조립
+  - 시그니처, LSD(no GCT), NETSCAPE2.0 루프 익스텐션(다중 프레임 시), GCE(투명/delay), Image Descriptor(Local Color Table), 데이터 블록, 트레일러 0x3B
+- `src/io/GifExporter.ts` 추가: EditorState → GIF 바이트 / Blob / triggerDownload, 다중 프레임 API
+- `src/ui/ExportPanel.ts`: GIF 다운로드 버튼 추가
+- 테스트 15건 추가 (colorTable 5, lzw 4, gifEncode 6)
+
+**검증**
+
+- `npm test` 230건 모두 통과
+
+### Issue #15 — 단축키 시스템
+
+**변경 사항**
+
+- `src/ui/KeyboardShortcuts.ts` 추가
+  - `parseShortcut("Ctrl+Shift+Z")` 파서 (Ctrl/Cmd/Meta 동등, Shift/Alt 조합)
+  - `matchesShortcut(ev, shortcut)` — ctrl 과 meta 동등 취급(cross-platform)
+  - `KeyboardShortcuts` 디스패처: register / handle / all
+  - `isEditingContext(target)` — 입력 필드/contentEditable 필터
+- `src/app.ts`: 기존 분산된 onKeyDown 로직을 버리고 단일 `buildShortcuts()` 에서 등록
+  - 툴: P/E/F/I/L/R/O/S/M
+  - Undo: Ctrl+Z / Redo: Ctrl+Shift+Z, Ctrl+Y
+  - G: 그리드 토글, Escape: 선택 해제
+- 테스트 11건 추가 (parseShortcut / matchesShortcut / KeyboardShortcuts.handle·aliases·all)
+
+**검증**
+
+- `npm test` 241건 모두 통과
+- `npm run build` 성공

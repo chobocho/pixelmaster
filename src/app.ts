@@ -18,6 +18,7 @@ import { MoveTool } from './tools/MoveTool.js';
 import { MarqueeRenderer } from './renderer/MarqueeRenderer.js';
 import type { PointerButton, ToolContext, ToolId } from './tools/Tool.js';
 import { mapToPixel } from './ui/pointerMapping.js';
+import { KeyboardShortcuts, isEditingContext } from './ui/KeyboardShortcuts.js';
 import { HistoryManager } from './editor/HistoryManager.js';
 import type { EditorSnapshot } from './editor/snapshot.js';
 import { IndexedDBProjectStorage } from './storage/IndexedDBProjectStorage.js';
@@ -35,17 +36,17 @@ import { ExportPanel } from './ui/ExportPanel.js';
 import { StatusBar } from './ui/StatusBar.js';
 
 const DEFAULT_SIZE: CanvasSize = 32;
-const TOOL_SHORTCUTS: Readonly<Record<string, ToolId>> = {
-  p: 'pencil',
-  e: 'eraser',
-  f: 'fill',
-  i: 'eyedropper',
-  l: 'line',
-  r: 'rect',
-  o: 'ellipse',
-  s: 'select',
-  m: 'move',
-};
+const TOOL_KEY_BINDINGS: ReadonlyArray<readonly [string, ToolId]> = [
+  ['p', 'pencil'],
+  ['e', 'eraser'],
+  ['f', 'fill'],
+  ['i', 'eyedropper'],
+  ['l', 'line'],
+  ['r', 'rect'],
+  ['o', 'ellipse'],
+  ['s', 'select'],
+  ['m', 'move'],
+];
 
 export class App {
   private readonly canvasEl: HTMLCanvasElement;
@@ -60,6 +61,7 @@ export class App {
   private readonly history: HistoryManager<EditorSnapshot>;
   private readonly storage: ProjectStorage;
   private readonly autoSaver: AutoSaver;
+  private readonly shortcuts: KeyboardShortcuts;
 
   private readonly toolbar: Toolbar;
   private readonly palette: PalettePanel;
@@ -103,6 +105,7 @@ export class App {
 
     this.storage = new IndexedDBProjectStorage();
     this.autoSaver = new AutoSaver(() => this.saveProject(), 1000);
+    this.shortcuts = this.buildShortcuts();
 
     const refreshUI = (): void => this.refreshUI();
     this.toolbar = new Toolbar(ui.toolbar, this.toolManager, refreshUI);
@@ -368,30 +371,39 @@ export class App {
   };
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
-    const target = e.target as HTMLElement | null;
-    if (target !== null) {
-      const tag = target.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
-    }
-    if (e.ctrlKey || e.metaKey) {
-      const k = e.key.toLowerCase();
-      if (k === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) this.redo();
-        else this.undo();
-        return;
-      }
-      if (k === 'y') {
-        e.preventDefault();
-        this.redo();
-        return;
-      }
-      return;
-    }
-    const id = TOOL_SHORTCUTS[e.key.toLowerCase()];
-    if (id !== undefined && this.toolManager.registeredIds.includes(id)) {
-      this.toolManager.setActive(id);
-      this.refreshUI();
+    if (isEditingContext(e.target)) return;
+    if (this.shortcuts.handle(e)) {
+      e.preventDefault();
     }
   };
+
+  private buildShortcuts(): KeyboardShortcuts {
+    const k = new KeyboardShortcuts();
+    for (const [key, id] of TOOL_KEY_BINDINGS) {
+      k.register(
+        key,
+        () => {
+          if (this.toolManager.registeredIds.includes(id)) {
+            this.toolManager.setActive(id);
+            this.refreshUI();
+          }
+        },
+        `Tool: ${id}`,
+      );
+    }
+    k.register('Ctrl+Z', () => this.undo(), 'Undo');
+    k.register('Ctrl+Shift+Z', () => this.redo(), 'Redo');
+    k.register('Ctrl+Y', () => this.redo(), 'Redo');
+    k.register('G', () => {
+      this.toggleGrid();
+      this.refreshUI();
+    }, 'Toggle grid');
+    k.register('Escape', () => {
+      if (this.state.selection.isActive) {
+        this.state.selection.clear();
+        this.refreshUI();
+      }
+    }, 'Clear selection');
+    return k;
+  }
 }
