@@ -190,48 +190,56 @@
     }
     button { cursor: pointer; }
 
-    /* 좁은 화면 (폴드 접힌 상태, 좁은 태블릿 모드 등) 대응. */
+    /* 좁은 화면 (폴드 접힌 상태, 좁은 태블릿 모드 등) 대응.
+       원칙: 본문 스크롤 없음, 뷰포트 안에 모든 UI 가 항상 보여야 한다.
+       - 툴바: 상단 가로 한 줄 (넘치면 툴바 내부만 가로 스크롤)
+       - 캔버스: 남는 공간 전부 (flex 1 1 auto)
+       - 우측 패널: 하단으로 이동, max-height 제한 + 내부 스크롤 */
     @media (max-width: 800px) {
-      html, body { overflow: auto; }
+      html, body { overflow: hidden; }
       #app, .pm-root {
-        height: auto;
-        min-height: 100dvh;
+        height: 100dvh;
       }
       .pm-main {
         flex-direction: column;
         min-height: 0;
+        overflow: hidden;
       }
       .pm-toolbar {
         width: 100%;
+        flex: 0 0 auto;
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        overflow-x: auto;
         gap: 2px;
         padding: 4px;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
       .pm-toolbar button {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         font-size: 16px;
+        flex: 0 0 auto;
       }
       .pm-canvas-wrap {
-        flex: 0 0 auto;
+        flex: 1 1 auto;
+        min-height: 0;
         width: 100%;
-        aspect-ratio: 1 / 1;
       }
       .pm-right-panel {
         width: 100%;
+        flex: 0 0 auto;
+        max-height: 45dvh;
         border-left: none;
         border-top: 1px solid var(--border);
-        max-height: none;
-        overflow-y: visible;
+        overflow-y: auto;
       }
       .palette-grid {
         grid-template-columns: repeat(16, 1fr);
       }
       .layer-list {
-        max-height: none;
+        max-height: 120px;
       }
     }
   </style>
