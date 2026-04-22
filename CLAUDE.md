@@ -287,7 +287,7 @@ export class Renderer {
 | 8 | 레이어 시스템 | ✅ DONE |
 | 9 | Undo/Redo (히스토리 50단계) | ✅ DONE |
 | 10 | PNG 내보내기 (원본 + 스케일업) | ✅ DONE |
-| 11 | IndexedDB 자동저장 + 이어하기 | 🔲 TODO |
+| 11 | IndexedDB 자동저장 + 이어하기 | ✅ DONE |
 | 12 | UI 레이아웃 + 패널 리사이즈 | 🔲 TODO |
 | 13 | 선택·이동 도구 | 🔲 TODO |
 | 14 | GIF 내보내기 (애니메이션) | 🔲 TODO |

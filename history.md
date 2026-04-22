@@ -201,3 +201,20 @@
 **검증**
 
 - `npm test` 183건 모두 통과
+
+### Issue #11 — IndexedDB 자동저장 + 이어하기
+
+**변경 사항**
+
+- `src/storage/ProjectRecord.ts` 추가: `ProjectRecord`(id/name/createdAt/updatedAt/snapshot/palette), `projectRecordFromState`, `applyProjectRecord`(size 불일치 throw), `ProjectSummary`
+- `src/storage/ProjectStorage.ts` 추가: save / load / list / delete 추상 인터페이스
+- `src/storage/InMemoryProjectStorage.ts` 추가: 테스트용 Map 기반 구현, 내부 defensive 구조 복사
+- `src/storage/IndexedDBProjectStorage.ts` 추가: 브라우저 실사용 IDB 구현 (onupgradeneeded 시 store 생성)
+- `src/storage/AutoSaver.ts` 추가: 디바운스 저장 스케줄러, `Scheduler` 추상화로 테스트 가능 (FakeScheduler), schedule/cancel/flush
+- `src/app.ts`: IndexedDB 저장소 + AutoSaver 보유, 시작 시 `loadLatestProject()` 로 최신 프로젝트 복원(사이즈 일치 시만), pointerup 후 `autoSaver.schedule()`
+- 테스트 13건 추가 (projectRecord 4, inMemoryStorage 5, autoSaver 4)
+- IndexedDBProjectStorage 는 Node 에서 테스트 불가(구조 분리로 논리는 InMemory 로 검증)
+
+**검증**
+
+- `npm test` 196건 모두 통과

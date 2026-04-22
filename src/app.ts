@@ -7,6 +7,13 @@ import { EditorState } from './editor/EditorState.js';
 import type { CanvasSize } from './editor/CanvasSize.js';
 import { HistoryManager } from './editor/HistoryManager.js';
 import type { EditorSnapshot } from './editor/snapshot.js';
+import { IndexedDBProjectStorage } from './storage/IndexedDBProjectStorage.js';
+import type { ProjectStorage } from './storage/ProjectStorage.js';
+import { AutoSaver } from './storage/AutoSaver.js';
+import {
+  applyProjectRecord,
+  projectRecordFromState,
+} from './storage/ProjectRecord.js';
 import { ToolManager } from './tools/ToolManager.js';
 import { PencilTool } from './tools/PencilTool.js';
 import { EraserTool } from './tools/EraserTool.js';
@@ -30,6 +37,10 @@ export class App {
   private readonly state: EditorState;
   private readonly toolManager: ToolManager;
   private readonly history: HistoryManager<EditorSnapshot>;
+  private readonly storage: ProjectStorage;
+  private readonly autoSaver: AutoSaver;
+  private projectId = 'default';
+  private projectName = 'Untitled';
 
   private running = false;
   private rafHandle = 0;
@@ -57,6 +68,10 @@ export class App {
 
     this.history = new HistoryManager<EditorSnapshot>();
     this.history.push(this.state.takeSnapshot());
+
+    this.storage = new IndexedDBProjectStorage();
+    this.autoSaver = new AutoSaver(() => this.saveProject(), 1000);
+    void this.loadLatestProject();
 
     this.syncToElementSize();
     window.addEventListener('resize', this.syncToElementSize);
@@ -94,6 +109,36 @@ export class App {
     if (snap === null) return false;
     this.state.restoreSnapshot(snap);
     return true;
+  }
+
+  private async loadLatestProject(): Promise<void> {
+    try {
+      const list = await this.storage.list();
+      if (list.length === 0) return;
+      const latest = list[0];
+      const record = await this.storage.load(latest.id);
+      if (record === null) return;
+      if (record.snapshot.size !== this.state.size) return;
+      this.projectId = record.id;
+      this.projectName = record.name;
+      applyProjectRecord(this.state, record);
+      this.history.clear();
+      this.history.push(this.state.takeSnapshot());
+    } catch (err) {
+      console.warn('Failed to load project', err);
+    }
+  }
+
+  private async saveProject(): Promise<void> {
+    try {
+      const record = projectRecordFromState(this.state, {
+        id: this.projectId,
+        name: this.projectName,
+      });
+      await this.storage.save(record);
+    } catch (err) {
+      console.warn('Failed to save project', err);
+    }
   }
 
   private bindPointerEvents(): void {
@@ -175,6 +220,7 @@ export class App {
     this.toolManager.onPointerUp(this.buildContext(), { x: pt.x, y: pt.y, button });
     this.lastPixel = null;
     this.history.push(this.state.takeSnapshot());
+    this.autoSaver.schedule();
   };
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
