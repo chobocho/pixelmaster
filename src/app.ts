@@ -70,12 +70,15 @@ export class App {
   private readonly shortcuts: KeyboardShortcuts;
 
   private readonly toolbar: Toolbar;
-  private readonly palette: PalettePanel;
   private readonly layerPanel: LayerPanel;
   private readonly statusBar: StatusBar;
   private readonly sizePanel: SizePanel;
   private readonly inlinePalette: InlinePalette;
+  private readonly palettePopoverPanel: PalettePanel;
   private readonly resizeObserver: ResizeObserver | null;
+
+  private lastSyncedW = 0;
+  private lastSyncedH = 0;
 
   private projectId = 'default';
   private projectName = 'Untitled';
@@ -142,10 +145,9 @@ export class App {
     const exportPopover = new Popover('Export');
     new ExportPanel(exportPopover.content, this.state);
 
-    // 호환을 위해 PalettePanel 은 그대로 두되 HEX 입력 전용으로만 사용하지 않음
-    // (InlinePalette 로 기능 흡수). this.palette 는 render() 호출만 안전하게 동작.
-    const hiddenHost = document.createElement('div');
-    this.palette = new PalettePanel(hiddenHost, this.state, refreshUI);
+    // HEX 입력 기능이 필요할 때 쓸 수 있는 전체 팔레트 패널 (팝오버 안).
+    const palettePopover = new Popover('Palette');
+    this.palettePopoverPanel = new PalettePanel(palettePopover.content, this.state, refreshUI);
 
     ui.layerButton.addEventListener('click', () => layerPopover.toggle());
     ui.sizeButton.addEventListener('click', () => sizePopover.toggle());
@@ -224,7 +226,7 @@ export class App {
 
   private refreshUI(): void {
     this.toolbar.render();
-    this.palette.render();
+    this.palettePopoverPanel.render();
     this.inlinePalette.render();
     this.layerPanel.render();
     this.sizePanel.render(this.state.size);
@@ -279,7 +281,10 @@ export class App {
     this.state.resize(newSize, 'clear');
     this.history.clear();
     this.history.push(this.state.takeSnapshot());
-    this.needsFit = true;
+    // 그리드 크기가 바뀌었으니 강제 재-fit.
+    this.lastSyncedW = 0;
+    this.lastSyncedH = 0;
+    this.syncToElementSize();
     this.autoSaver.schedule();
     this.refreshUI();
   }
@@ -438,7 +443,7 @@ export class App {
 
   private readonly tick = (): void => {
     if (!this.running) return;
-    if (this.needsFit) {
+    if (this.needsFit && this.renderer.cssWidth > 0 && this.renderer.cssHeight > 0) {
       this.viewport.fitToViewport(
         this.renderer.cssWidth,
         this.renderer.cssHeight,
@@ -481,10 +486,18 @@ export class App {
     const parent = this.canvasEl.parentElement;
     const w = parent?.clientWidth ?? 0;
     const h = parent?.clientHeight ?? 0;
-    if (w > 0 && h > 0) {
-      this.renderer.resize(w, h);
-      this.needsFit = true;
-    }
+    if (w <= 0 || h <= 0) return;
+    if (w === this.lastSyncedW && h === this.lastSyncedH) return;
+
+    this.renderer.resize(w, h);
+    // Renderer 사이즈와 viewport fit 을 같은 동기 호출로 맞춘다.
+    // 포인터 이벤트는 항상 현재 cssW/H 기준 region 을 쓰게 되어
+    // 좌표 불일치가 한 프레임도 발생하지 않는다.
+    this.viewport.fitToViewport(w, h, this.gridWidth(), this.gridHeight());
+    this.needsFit = false;
+    this.lastSyncedW = w;
+    this.lastSyncedH = h;
+    this.updateStatus();
   };
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
