@@ -35,13 +35,13 @@ test('SelectTool accepts reversed drag direction', () => {
 });
 
 test('SelectTool clamps to canvas bounds', () => {
-  const c = new PixelCanvas(10);
+  const c = new PixelCanvas(16);
   const sel = new Selection();
   const tool = new SelectTool();
   const ctx = makeCtx(c, sel);
   tool.onPointerDown(ctx, { x: -5, y: -5, button: 'left' });
   tool.onPointerUp(ctx, { x: 20, y: 20, button: 'left' });
-  assert.deepEqual(sel.rect, { x: 0, y: 0, width: 10, height: 10 });
+  assert.deepEqual(sel.rect, { x: 0, y: 0, width: 16, height: 16 });
 });
 
 test('SelectTool pointer move updates selection during drag', () => {

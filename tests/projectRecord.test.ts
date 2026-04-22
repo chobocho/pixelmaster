@@ -43,7 +43,7 @@ test('applyProjectRecord throws on size mismatch', () => {
 });
 
 test('projectRecordFromState uses provided createdAt or now', () => {
-  const s = new EditorState(10);
+  const s = new EditorState(16);
   const rec = projectRecordFromState(s, { id: 'p', name: 't', createdAt: 12345 });
   assert.equal(rec.createdAt, 12345);
   assert.ok(rec.updatedAt >= rec.createdAt);

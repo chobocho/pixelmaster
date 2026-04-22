@@ -11,8 +11,8 @@ import {
   TARGET_FPS,
 } from '../src/editor/CanvasSize.js';
 
-test('CANVAS_SIZES lists the 6 supported sizes in ascending order', () => {
-  assert.deepEqual([...CANVAS_SIZES], [10, 16, 20, 25, 32, 64]);
+test('CANVAS_SIZES lists the 8 supported sizes in ascending order', () => {
+  assert.deepEqual([...CANVAS_SIZES], [16, 24, 32, 48, 64, 128, 160, 192]);
 });
 
 test('DEFAULT_ZOOM provides a zoom within [MIN_ZOOM, MAX_ZOOM] for each size', () => {
@@ -30,7 +30,9 @@ test('isCanvasSize accepts supported sizes and rejects others', () => {
     assert.equal(isCanvasSize(size), true);
   }
   assert.equal(isCanvasSize(8), false);
-  assert.equal(isCanvasSize(128), false);
+  assert.equal(isCanvasSize(10), false);
+  assert.equal(isCanvasSize(100), false);
+  assert.equal(isCanvasSize(256), false);
   assert.equal(isCanvasSize(0), false);
   assert.equal(isCanvasSize(-16), false);
   assert.equal(isCanvasSize(16.5), false);

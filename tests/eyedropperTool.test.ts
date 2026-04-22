@@ -41,7 +41,7 @@ test('EyedropperTool right click sets background to picked pixel color', () => {
 });
 
 test('EyedropperTool out-of-bounds click is ignored', () => {
-  const canvas = new PixelCanvas(10);
+  const canvas = new PixelCanvas(16);
   let changed = false;
   const ctx: ToolContext = {
     canvas,
@@ -56,7 +56,7 @@ test('EyedropperTool out-of-bounds click is ignored', () => {
 });
 
 test('EyedropperTool works without setters (no-op)', () => {
-  const canvas = new PixelCanvas(10);
+  const canvas = new PixelCanvas(16);
   canvas.setPixel(1, 1, RED);
   const ctx: ToolContext = {
     canvas,

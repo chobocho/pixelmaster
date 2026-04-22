@@ -45,7 +45,7 @@ test('ToolManager has no active tool when empty', () => {
   assert.equal(mgr.active, null);
   assert.equal(mgr.activeId, null);
   // Dispatching with no active tool is safe
-  const canvas = new PixelCanvas(10);
+  const canvas = new PixelCanvas(16);
   mgr.onPointerDown(makeCtx(canvas), { x: 0, y: 0, button: 'left' });
 });
 

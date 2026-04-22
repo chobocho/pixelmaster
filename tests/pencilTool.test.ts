@@ -53,7 +53,7 @@ test('PencilTool move without down is a no-op', () => {
 });
 
 test('PencilTool ignores out-of-bounds coordinates silently', () => {
-  const canvas = new PixelCanvas(10);
+  const canvas = new PixelCanvas(16);
   const tool = new PencilTool();
   const ctx = makeCtx(canvas);
   // Start in-bounds, move out-of-bounds

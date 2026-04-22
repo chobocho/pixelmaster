@@ -15,24 +15,24 @@ function approxEqual(a: RGBA, b: RGBA, tolerance: number = 2): void {
 }
 
 test('compositeOver opaque source over transparent dest yields opaque source', () => {
-  const src = new PixelCanvas(10);
-  const dst = new PixelCanvas(10);
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
   src.fill(RED);
   compositeOver(src, dst, 1);
   approxEqual(dst.getPixel(0, 0), RED);
 });
 
 test('compositeOver transparent source does nothing', () => {
-  const src = new PixelCanvas(10);
-  const dst = new PixelCanvas(10);
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
   dst.fill(RED);
   compositeOver(src, dst, 1);
   approxEqual(dst.getPixel(0, 0), RED);
 });
 
 test('compositeOver 50% alpha source over solid dest blends evenly', () => {
-  const src = new PixelCanvas(10);
-  const dst = new PixelCanvas(10);
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
   src.fill({ r: 255, g: 0, b: 0, a: 128 });
   dst.fill(BLUE);
   compositeOver(src, dst, 1);
@@ -40,8 +40,8 @@ test('compositeOver 50% alpha source over solid dest blends evenly', () => {
 });
 
 test('compositeOver opacity 0 is a no-op', () => {
-  const src = new PixelCanvas(10);
-  const dst = new PixelCanvas(10);
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
   src.fill(RED);
   dst.fill(BLUE);
   compositeOver(src, dst, 0);
@@ -49,8 +49,8 @@ test('compositeOver opacity 0 is a no-op', () => {
 });
 
 test('compositeOver opacity 0.5 halves source contribution', () => {
-  const src = new PixelCanvas(10);
-  const dst = new PixelCanvas(10);
+  const src = new PixelCanvas(16);
+  const dst = new PixelCanvas(16);
   src.fill(RED);
   compositeOver(src, dst, 0.5);
   approxEqual(dst.getPixel(0, 0), { r: 255, g: 0, b: 0, a: 128 }, 2);

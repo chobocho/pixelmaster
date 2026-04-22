@@ -28,16 +28,16 @@ test('setPixel / getPixel round-trip', () => {
 });
 
 test('setPixel and getPixel reject out-of-bounds coordinates', () => {
-  const pc = new PixelCanvas(10);
+  const pc = new PixelCanvas(16);
   assert.throws(() => pc.setPixel(-1, 0, RED), RangeError);
   assert.throws(() => pc.setPixel(0, -1, RED), RangeError);
-  assert.throws(() => pc.setPixel(10, 0, RED), RangeError);
-  assert.throws(() => pc.setPixel(0, 10, RED), RangeError);
-  assert.throws(() => pc.getPixel(10, 10), RangeError);
+  assert.throws(() => pc.setPixel(16, 0, RED), RangeError);
+  assert.throws(() => pc.setPixel(0, 16, RED), RangeError);
+  assert.throws(() => pc.getPixel(16, 16), RangeError);
 });
 
 test('fill fills entire canvas with the given color', () => {
-  const pc = new PixelCanvas(10);
+  const pc = new PixelCanvas(16);
   pc.fill(RED);
   for (let y = 0; y < 10; y++) {
     for (let x = 0; x < 10; x++) {
@@ -47,7 +47,7 @@ test('fill fills entire canvas with the given color', () => {
 });
 
 test('clear sets all pixels to fully transparent', () => {
-  const pc = new PixelCanvas(10);
+  const pc = new PixelCanvas(16);
   pc.fill(RED);
   pc.clear();
   for (let y = 0; y < 10; y++) {
@@ -69,12 +69,12 @@ test('clone produces an independent copy', () => {
 });
 
 test('isInBounds reflects canvas edges', () => {
-  const pc = new PixelCanvas(10);
+  const pc = new PixelCanvas(16);
   assert.equal(pc.isInBounds(0, 0), true);
-  assert.equal(pc.isInBounds(9, 9), true);
+  assert.equal(pc.isInBounds(15, 15), true);
   assert.equal(pc.isInBounds(-1, 0), false);
-  assert.equal(pc.isInBounds(10, 0), false);
-  assert.equal(pc.isInBounds(0, 10), false);
+  assert.equal(pc.isInBounds(16, 0), false);
+  assert.equal(pc.isInBounds(0, 16), false);
 });
 
 test('resize preserve mode keeps old pixels in top-left when enlarging', () => {
@@ -124,7 +124,7 @@ test('resize to same size is a no-op and keeps the buffer reference', () => {
 });
 
 test('Uint8ClampedArray clamps component values outside 0..255', () => {
-  const pc = new PixelCanvas(10);
+  const pc = new PixelCanvas(16);
   pc.setPixel(0, 0, { r: 300, g: -10, b: 128, a: 1024 });
   const p = pc.getPixel(0, 0);
   assert.equal(p.r, 255);

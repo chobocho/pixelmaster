@@ -49,15 +49,15 @@ test('PngExporter encode at scale 2 doubles dimensions', () => {
 });
 
 test('PngExporter encode at scale 8 multiplies dimensions by 8', () => {
-  const s = new EditorState(10);
+  const s = new EditorState(16);
   const png = new PngExporter().encode(s, 8);
   const ihdr = findChunk(png, 'IHDR');
-  assert.equal(readUint32BE(ihdr, 0), 80);
-  assert.equal(readUint32BE(ihdr, 4), 80);
+  assert.equal(readUint32BE(ihdr, 0), 128);
+  assert.equal(readUint32BE(ihdr, 4), 128);
 });
 
 test('PngExporter encodes composited layers, not just active', () => {
-  const s = new EditorState(10);
+  const s = new EditorState(16);
   s.layers.addLayer();
   s.layers.getLayer(0).pixels.setPixel(0, 0, RED);
   s.layers.setActive(1);
