@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelMaster</title>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --panel: #2a2a2a;
+      --fg: #dddddd;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    #app-header {
+      padding: 8px 12px;
+      background: var(--panel);
+      border-bottom: 1px solid #000;
+      font-size: 14px;
+    }
+    #canvas-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      align-items: stretch;
+    }
+    #app-canvas {
+      flex: 1 1 auto;
+      display: block;
+      background: var(--panel);
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="app-header">PixelMaster</header>
+    <main id="canvas-wrap">
+      <canvas id="app-canvas"></canvas>
+    </main>
+  </div>
+  <script type="module" src="./dist/main.js"></script>
+</body>
+</html>

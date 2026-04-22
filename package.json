@@ -1,0 +1,24 @@
+{
+  "name": "pixelmaster",
+  "version": "0.1.0",
+  "description": "HTML5 Canvas + TypeScript 기반 픽셀 아트 에디터",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:test": "tsc -p tsconfig.test.json",
+    "test": "npm run build:test && node --test dist-test/tests/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "start": "python3 -m http.server 8001",
+    "clean": "rm -rf dist dist-test"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^5.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chobocho/pixelmaster.git"
+  },
+  "license": "ISC"
+}
