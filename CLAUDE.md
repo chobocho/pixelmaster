@@ -281,7 +281,7 @@ export class Renderer {
 | 2 | PixelCanvas 모델 + 캔버스 사이즈 6종 | ✅ DONE |
 | 3 | 연필·지우개 도구 + 마우스 입력 | ✅ DONE |
 | 4 | 줌 + 그리드·체커보드 렌더러 | ✅ DONE |
-| 5 | 채우기 도구 (BFS Flood Fill) | 🔲 TODO |
+| 5 | 채우기 도구 (BFS Flood Fill) | ✅ DONE |
 | 6 | 색상 시스템 (HSV 피커 + 팔레트) | 🔲 TODO |
 | 7 | 선·사각형·원 도구 | 🔲 TODO |
 | 8 | 레이어 시스템 | 🔲 TODO |

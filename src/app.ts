@@ -8,6 +8,7 @@ import type { CanvasSize } from './editor/CanvasSize.js';
 import { ToolManager } from './tools/ToolManager.js';
 import { PencilTool } from './tools/PencilTool.js';
 import { EraserTool } from './tools/EraserTool.js';
+import { FillTool } from './tools/FillTool.js';
 import type { PointerButton, ToolContext } from './tools/Tool.js';
 import { mapToPixel } from './ui/pointerMapping.js';
 
@@ -39,6 +40,7 @@ export class App {
     this.toolManager = new ToolManager();
     this.toolManager.register(new PencilTool());
     this.toolManager.register(new EraserTool());
+    this.toolManager.register(new FillTool());
     this.toolManager.setActive('pencil');
 
     this.syncToElementSize();

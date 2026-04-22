@@ -10,3 +10,7 @@ export interface RGBA {
 }
 
 export const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
+
+export function colorEquals(a: RGBA, b: RGBA): boolean {
+  return a.r === b.r && a.g === b.g && a.b === b.b && a.a === b.a;
+}

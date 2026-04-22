@@ -99,3 +99,17 @@
 
 - `npm test` 65건 모두 통과
 - `npm run build` 통과
+
+### Issue #5 — 채우기 도구 (BFS Flood Fill)
+
+**변경 사항**
+
+- `src/color/Color.ts`: `colorEquals(a, b)` 유틸 추가
+- `src/tools/floodFill.ts` 추가: 4방향 BFS 구현. 재귀 DFS 대신 head 포인터 큐 사용, Uint8Array visited 비트맵, 시작 픽셀 == 채우기 색이면 즉시 반환
+- `src/tools/FillTool.ts` 추가: 좌=전경, 우=배경. 이동/up 은 no-op
+- `src/app.ts`: FillTool 등록
+- 테스트 11건 추가 (floodFill 7, fillTool 4)
+
+**검증**
+
+- `npm test` 76건 모두 통과
