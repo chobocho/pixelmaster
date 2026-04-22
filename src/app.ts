@@ -38,6 +38,8 @@ import { SizePanel } from './ui/SizePanel.js';
 import { showModal } from './ui/Modal.js';
 import { PngExporter } from './io/PngExporter.js';
 import { Popover } from './ui/Popover.js';
+import { InlinePalette } from './ui/InlinePalette.js';
+import { rgbaToHex } from './color/conversions.js';
 
 const DEFAULT_SIZE: CanvasSize = 32;
 const TOOL_KEY_BINDINGS: ReadonlyArray<readonly [string, ToolId]> = [
@@ -72,6 +74,8 @@ export class App {
   private readonly layerPanel: LayerPanel;
   private readonly statusBar: StatusBar;
   private readonly sizePanel: SizePanel;
+  private readonly inlinePalette: InlinePalette;
+  private readonly resizeObserver: ResizeObserver | null;
 
   private projectId = 'default';
   private projectName = 'Untitled';
@@ -116,11 +120,16 @@ export class App {
     this.toolbar = new Toolbar(ui.toolbar, this.toolManager, refreshUI);
     this.statusBar = new StatusBar(ui.statusBar);
 
-    // 패널들은 모두 팝오버 안에서 동작한다. 팝오버를 닫아도 DOM 은 유지되어
-    // 이벤트 리스너와 상태가 보존된다.
-    const palettePopover = new Popover('Palette');
-    this.palette = new PalettePanel(palettePopover.content, this.state, refreshUI);
+    // 색상 선택은 화면에 상시 표시.
+    // FG 스왓치 탭 → HEX 입력 팝업.
+    this.inlinePalette = new InlinePalette(
+      ui.colorStrip,
+      this.state,
+      () => this.openHexInput(),
+      refreshUI,
+    );
 
+    // 레이어/크기/내보내기는 팝오버.
     const layerPopover = new Popover('Layers');
     this.layerPanel = new LayerPanel(layerPopover.content, this.state, refreshUI);
 
@@ -133,7 +142,11 @@ export class App {
     const exportPopover = new Popover('Export');
     new ExportPanel(exportPopover.content, this.state);
 
-    ui.paletteButton.addEventListener('click', () => palettePopover.toggle());
+    // 호환을 위해 PalettePanel 은 그대로 두되 HEX 입력 전용으로만 사용하지 않음
+    // (InlinePalette 로 기능 흡수). this.palette 는 render() 호출만 안전하게 동작.
+    const hiddenHost = document.createElement('div');
+    this.palette = new PalettePanel(hiddenHost, this.state, refreshUI);
+
     ui.layerButton.addEventListener('click', () => layerPopover.toggle());
     ui.sizeButton.addEventListener('click', () => sizePopover.toggle());
     ui.exportButton.addEventListener('click', () => exportPopover.toggle());
@@ -149,8 +162,28 @@ export class App {
     this.syncToElementSize();
     window.addEventListener('resize', this.syncToElementSize);
     window.addEventListener('keydown', this.onKeyDown);
+
+    // 캔버스를 감싼 부모가 리사이즈되면(폴드 펼침, 팝업 조정 등) 즉시 재적용.
+    const wrap = this.canvasEl.parentElement;
+    if (typeof ResizeObserver !== 'undefined' && wrap !== null) {
+      this.resizeObserver = new ResizeObserver(() => this.syncToElementSize());
+      this.resizeObserver.observe(wrap);
+    } else {
+      this.resizeObserver = null;
+    }
+
     this.bindPointerEvents();
     this.refreshUI();
+  }
+
+  private openHexInput(): void {
+    const current = rgbaToHex(this.state.foregroundColor);
+    const input = window.prompt('전경색 HEX (#RRGGBB)', current);
+    if (input === null) return;
+    const ok = this.inlinePalette.applyHex(input);
+    if (!ok) {
+      window.alert(`잘못된 HEX 형식: ${input}`);
+    }
   }
 
   start(): void {
@@ -192,6 +225,7 @@ export class App {
   private refreshUI(): void {
     this.toolbar.render();
     this.palette.render();
+    this.inlinePalette.render();
     this.layerPanel.render();
     this.sizePanel.render(this.state.size);
     this.updateStatus();
@@ -442,9 +476,11 @@ export class App {
   };
 
   private readonly syncToElementSize = (): void => {
-    const el = this.canvasEl;
-    const w = el.clientWidth || el.parentElement?.clientWidth || 0;
-    const h = el.clientHeight || el.parentElement?.clientHeight || 0;
+    // 캔버스는 Renderer.resize 에 의해 인라인 style.width/height 가 고정되므로
+    // 부모 (pm-canvas-wrap) 의 크기를 직접 측정해야 한다.
+    const parent = this.canvasEl.parentElement;
+    const w = parent?.clientWidth ?? 0;
+    const h = parent?.clientHeight ?? 0;
     if (w > 0 && h > 0) {
       this.renderer.resize(w, h);
       this.needsFit = true;

@@ -5,8 +5,8 @@ export interface UIRefs {
   redoButton: HTMLButtonElement;
   canvas: HTMLCanvasElement;
   canvasWrap: HTMLElement;
+  colorStrip: HTMLElement;
   toolbar: HTMLElement;
-  paletteButton: HTMLButtonElement;
   layerButton: HTMLButtonElement;
   sizeButton: HTMLButtonElement;
   exportButton: HTMLButtonElement;
@@ -14,9 +14,8 @@ export interface UIRefs {
 }
 
 /**
- * dotpict 풍의 단순한 수직 레이아웃:
- *   상단 헤더 | 풀폭 캔버스 | 도구 + 패널 트리거 바 | 상태표시줄
- * 색상·레이어·크기·내보내기 패널은 모두 팝오버로 띄운다.
+ * dotpict 풍의 수직 레이아웃.
+ *   헤더 | 풀폭 캔버스 | 색상 스트립(항상 표시) | 도구 + 트리거 | 상태바
  */
 export function buildUILayout(root: HTMLElement): UIRefs {
   root.innerHTML = '';
@@ -36,19 +35,20 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   canvas.className = 'pm-canvas';
   canvasWrap.appendChild(canvas);
 
+  const colorStrip = create('div', 'pm-color-strip');
+
   const bottomBar = create('div', 'pm-bottom-bar');
   const toolbar = create('nav', 'pm-toolbar');
   const extras = create('div', 'pm-toolbar-extras');
-  const paletteButton = iconButton('🎨', 'Palette');
   const layerButton = iconButton('📑', 'Layers');
   const sizeButton = iconButton('📐', 'Canvas size');
   const exportButton = iconButton('💾', 'Export');
-  extras.append(paletteButton, layerButton, sizeButton, exportButton);
+  extras.append(layerButton, sizeButton, exportButton);
   bottomBar.append(toolbar, extras);
 
   const statusBar = create('footer', 'pm-status-bar');
 
-  root.append(header, canvasWrap, bottomBar, statusBar);
+  root.append(header, canvasWrap, colorStrip, bottomBar, statusBar);
 
   return {
     header,
@@ -57,8 +57,8 @@ export function buildUILayout(root: HTMLElement): UIRefs {
     redoButton,
     canvas,
     canvasWrap,
+    colorStrip,
     toolbar,
-    paletteButton,
     layerButton,
     sizeButton,
     exportButton,
