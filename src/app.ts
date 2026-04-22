@@ -72,6 +72,7 @@ export class App {
   private readonly toolbar: Toolbar;
   private readonly layerPanel: LayerPanel;
   private readonly statusBar: StatusBar;
+  private readonly cursorLabel: HTMLElement;
   private readonly sizePanel: SizePanel;
   private readonly inlinePalette: InlinePalette;
   private readonly palettePopoverPanel: PalettePanel;
@@ -123,6 +124,7 @@ export class App {
     const refreshUI = (): void => this.refreshUI();
     this.toolbar = new Toolbar(ui.toolbar, this.toolManager, refreshUI);
     this.statusBar = new StatusBar(ui.statusBar);
+    this.cursorLabel = ui.cursorLabel;
 
     // 색상 선택은 화면에 상시 표시.
     // FG 스왓치 탭 → HEX 입력 팝업.
@@ -305,26 +307,28 @@ export class App {
     this.state.resize(newSize, 'clear');
     this.history.clear();
     this.history.push(this.state.takeSnapshot());
-    // 그리드 크기가 바뀌었으니 강제 재-fit.
-    this.lastSyncedW = 0;
-    this.lastSyncedH = 0;
-    this.syncToElementSize();
+    // 그리드 크기가 바뀌었으니 다음 tick 에서 재-fit.
+    this.needsFit = true;
     this.autoSaver.schedule();
     this.refreshUI();
   }
 
   private updateStatus(): void {
+    const cursor = this.hoverPixel ?? undefined;
     this.statusBar.update({
       width: this.state.activeCanvas.width,
       height: this.state.activeCanvas.height,
       zoom: this.viewport.zoom,
-      cursor: this.hoverPixel ?? undefined,
+      cursor,
       tool: this.toolManager.activeId ?? undefined,
       layers: {
         total: this.state.layers.count,
         active: this.state.layers.activeIndex,
       },
     });
+    // 좁은 화면에서는 레이어 아이콘과 같은 y 의 좌측 라벨에도 좌표를 표시한다.
+    // 상태바가 줄바꿈되어 캔버스가 밀리는 흔들림을 방지하는 것이 목적.
+    this.cursorLabel.textContent = cursor ? `(${cursor.x}, ${cursor.y})` : '';
   }
 
   private async loadLatestProject(): Promise<void> {
@@ -521,11 +525,9 @@ export class App {
 
     this.renderer.setDevicePixelRatio(dpr);
     this.renderer.resize(w, h);
-    // Renderer 사이즈와 viewport fit 을 같은 동기 호출로 맞춘다.
-    // 포인터 이벤트는 항상 현재 cssW/H 기준 region 을 쓰게 되어
-    // 좌표 불일치가 한 프레임도 발생하지 않는다.
-    this.viewport.fitToViewport(w, h, this.gridWidth(), this.gridHeight());
-    this.needsFit = false;
+    // 사용자의 줌/팬을 보존하기 위해 fit 은 여기서 호출하지 않는다.
+    // 최초 진입·캔버스 사이즈 변경 시에만 needsFit 플래그로 tick()에서 한 번 fit.
+    // 폴드 펼침/접힘 등 큰 변화 후 재정렬은 헤더의 ⊡ fit 버튼으로.
     this.lastSyncedW = w;
     this.lastSyncedH = h;
     this.lastSyncedDpr = dpr;

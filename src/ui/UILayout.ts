@@ -10,6 +10,7 @@ export interface UIRefs {
   canvasWrap: HTMLElement;
   colorStrip: HTMLElement;
   toolbar: HTMLElement;
+  cursorLabel: HTMLElement;
   layerButton: HTMLButtonElement;
   sizeButton: HTMLButtonElement;
   exportButton: HTMLButtonElement;
@@ -55,10 +56,13 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   const bottomBar = create('div', 'pm-bottom-bar');
   const toolbar = create('nav', 'pm-toolbar');
   const extras = create('div', 'pm-toolbar-extras');
+  const cursorLabel = create('span', 'pm-cursor-label');
   const layerButton = iconButton('📑', 'Layers');
   const sizeButton = iconButton('📐', 'Canvas size');
   const exportButton = iconButton('💾', 'Export');
-  extras.append(layerButton, sizeButton, exportButton);
+  // 커서 라벨은 extras 행의 좌측에 배치되어 같은 y 에서 레이어/사이즈/내보내기 아이콘과 정렬된다.
+  // 이렇게 하면 좌표 텍스트 길이가 변해도 줄바꿈이 아닌 가로 공간만 쓰므로 레이아웃이 밀리지 않는다.
+  extras.append(cursorLabel, layerButton, sizeButton, exportButton);
   bottomBar.append(toolbar, extras);
 
   const statusBar = create('footer', 'pm-status-bar');
@@ -77,6 +81,7 @@ export function buildUILayout(root: HTMLElement): UIRefs {
     canvasWrap,
     colorStrip,
     toolbar,
+    cursorLabel,
     layerButton,
     sizeButton,
     exportButton,
