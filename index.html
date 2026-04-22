@@ -387,6 +387,69 @@
       border-color: #862828;
       color: white;
     }
+
+    /* ── Landscape / wide (Fold unfolded 가로 모드 등) ──
+       세로 공간 확보를 위해 도구와 색상 스트립을 양쪽 세로 컬럼으로 이동한다.
+       이 덕분에 캔버스 높이가 커져 128/192 등 큰 사이즈가 더 큰 정수 배율로
+       fit 된다 (예: Fold 857×678 기준 192 가 scale 2 → 3 으로 상승). */
+    @media (min-aspect-ratio: 1/1) {
+      .pm-root {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas:
+          "h h h"
+          "t c p"
+          "s s s";
+      }
+      .pm-header { grid-area: h; }
+      .pm-canvas-wrap { grid-area: c; min-width: 0; }
+      .pm-status-bar { grid-area: s; }
+
+      .pm-bottom-bar {
+        grid-area: t;
+        flex-direction: column;
+        width: 52px;
+        padding: 4px 2px;
+        border-top: none;
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .pm-toolbar {
+        flex-direction: column;
+        overflow: visible;
+      }
+      .pm-toolbar-extras {
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .pm-color-strip {
+        grid-area: p;
+        flex-direction: column;
+        width: 56px;
+        padding: 4px 4px;
+        border-top: none;
+        border-left: 1px solid var(--border);
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .pm-color-strip .pm-color-cells {
+        flex-direction: column;
+        flex: 1 1 auto;
+      }
+      .pm-color-sep {
+        width: 36px;
+        height: 1px;
+      }
+      .pm-color-swatch,
+      .pm-color-cell {
+        width: 36px;
+      }
+      .pm-color-swatch { height: 36px; }
+      .pm-color-cell { height: 30px; }
+    }
   </style>
 </head>
 <body>
