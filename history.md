@@ -113,3 +113,21 @@
 **검증**
 
 - `npm test` 76건 모두 통과
+
+### Issue #6 — 색상 시스템 (HSV/HEX 변환 + 팔레트 + 스포이드)
+
+**변경 사항**
+
+- `src/color/conversions.ts` 추가: `hsvToRgb`, `rgbToHsv`(0..360 정규화), `rgbaToHex`(alpha=255 시 6자리, 아니면 8자리), `hexToRgba`(3/4/6/8 자리 모두, 잘못된 입력 null)
+- `src/color/PaletteManager.ts` 추가: max 32 (기본) 제한, add/replace/remove/clear/get(방어적 복사)/toJSON/loadJSON
+- `src/color/defaultPalette.ts` 추가: 내장 16색 기본 팔레트
+- `src/tools/EyedropperTool.ts` 추가: 클릭 픽셀 색 → FG(좌)/BG(우), 콜백 없으면 no-op
+- `src/tools/Tool.ts`: `ToolContext` 에 optional `setForegroundColor`/`setBackgroundColor` 콜백 추가
+- `src/editor/EditorState.ts`: palette 보관, setFG/BG 메서드, 기본 팔레트 로드
+- `src/app.ts`: EyedropperTool 등록, buildContext 에 setter 주입
+- `data/default-palettes.json` 추가: 기본 팔레트 JSON 정의
+- 테스트 24건 추가 (conversions 9, palette 9, eyedropper 4, defaultPalette 2)
+
+**검증**
+
+- `npm test` 100건 모두 통과

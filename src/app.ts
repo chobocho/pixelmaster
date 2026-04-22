@@ -9,6 +9,7 @@ import { ToolManager } from './tools/ToolManager.js';
 import { PencilTool } from './tools/PencilTool.js';
 import { EraserTool } from './tools/EraserTool.js';
 import { FillTool } from './tools/FillTool.js';
+import { EyedropperTool } from './tools/EyedropperTool.js';
 import type { PointerButton, ToolContext } from './tools/Tool.js';
 import { mapToPixel } from './ui/pointerMapping.js';
 
@@ -41,6 +42,7 @@ export class App {
     this.toolManager.register(new PencilTool());
     this.toolManager.register(new EraserTool());
     this.toolManager.register(new FillTool());
+    this.toolManager.register(new EyedropperTool());
     this.toolManager.setActive('pencil');
 
     this.syncToElementSize();
@@ -112,6 +114,8 @@ export class App {
       canvas: this.state.canvas,
       foregroundColor: this.state.foregroundColor,
       backgroundColor: this.state.backgroundColor,
+      setForegroundColor: (c) => this.state.setForegroundColor(c),
+      setBackgroundColor: (c) => this.state.setBackgroundColor(c),
     };
   }
 

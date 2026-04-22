@@ -24,6 +24,10 @@ export interface ToolContext {
   readonly canvas: PixelCanvas;
   readonly foregroundColor: RGBA;
   readonly backgroundColor: RGBA;
+  /** 전경색 갱신. 스포이드 등에서 사용. */
+  readonly setForegroundColor?: (color: RGBA) => void;
+  /** 배경색 갱신. 스포이드 등에서 사용. */
+  readonly setBackgroundColor?: (color: RGBA) => void;
 }
 
 export interface Tool {
