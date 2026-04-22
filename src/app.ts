@@ -5,6 +5,16 @@ import { GridRenderer } from './renderer/GridRenderer.js';
 import { Viewport } from './renderer/Viewport.js';
 import { EditorState } from './editor/EditorState.js';
 import type { CanvasSize } from './editor/CanvasSize.js';
+import { ToolManager } from './tools/ToolManager.js';
+import { PencilTool } from './tools/PencilTool.js';
+import { EraserTool } from './tools/EraserTool.js';
+import { FillTool } from './tools/FillTool.js';
+import { EyedropperTool } from './tools/EyedropperTool.js';
+import { LineTool } from './tools/LineTool.js';
+import { RectTool } from './tools/RectTool.js';
+import { EllipseTool } from './tools/EllipseTool.js';
+import type { PointerButton, ToolContext, ToolId } from './tools/Tool.js';
+import { mapToPixel } from './ui/pointerMapping.js';
 import { HistoryManager } from './editor/HistoryManager.js';
 import type { EditorSnapshot } from './editor/snapshot.js';
 import { IndexedDBProjectStorage } from './storage/IndexedDBProjectStorage.js';
@@ -14,18 +24,23 @@ import {
   applyProjectRecord,
   projectRecordFromState,
 } from './storage/ProjectRecord.js';
-import { ToolManager } from './tools/ToolManager.js';
-import { PencilTool } from './tools/PencilTool.js';
-import { EraserTool } from './tools/EraserTool.js';
-import { FillTool } from './tools/FillTool.js';
-import { EyedropperTool } from './tools/EyedropperTool.js';
-import { LineTool } from './tools/LineTool.js';
-import { RectTool } from './tools/RectTool.js';
-import { EllipseTool } from './tools/EllipseTool.js';
-import type { PointerButton, ToolContext } from './tools/Tool.js';
-import { mapToPixel } from './ui/pointerMapping.js';
+import type { UIRefs } from './ui/UILayout.js';
+import { Toolbar } from './ui/Toolbar.js';
+import { PalettePanel } from './ui/PalettePanel.js';
+import { LayerPanel } from './ui/LayerPanel.js';
+import { ExportPanel } from './ui/ExportPanel.js';
+import { StatusBar } from './ui/StatusBar.js';
 
 const DEFAULT_SIZE: CanvasSize = 32;
+const TOOL_SHORTCUTS: Readonly<Record<string, ToolId>> = {
+  p: 'pencil',
+  e: 'eraser',
+  f: 'fill',
+  i: 'eyedropper',
+  l: 'line',
+  r: 'rect',
+  o: 'ellipse',
+};
 
 export class App {
   private readonly canvasEl: HTMLCanvasElement;
@@ -39,6 +54,12 @@ export class App {
   private readonly history: HistoryManager<EditorSnapshot>;
   private readonly storage: ProjectStorage;
   private readonly autoSaver: AutoSaver;
+
+  private readonly toolbar: Toolbar;
+  private readonly palette: PalettePanel;
+  private readonly layerPanel: LayerPanel;
+  private readonly statusBar: StatusBar;
+
   private projectId = 'default';
   private projectName = 'Untitled';
 
@@ -46,8 +67,10 @@ export class App {
   private rafHandle = 0;
   private needsFit = true;
   private lastPixel: { x: number; y: number } | null = null;
+  private hoverPixel: { x: number; y: number } | null = null;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(ui: UIRefs) {
+    const canvas = ui.canvas;
     const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
     this.canvasEl = canvas;
     this.renderer = new Renderer(canvas, dpr);
@@ -71,12 +94,24 @@ export class App {
 
     this.storage = new IndexedDBProjectStorage();
     this.autoSaver = new AutoSaver(() => this.saveProject(), 1000);
+
+    const refreshUI = (): void => this.refreshUI();
+    this.toolbar = new Toolbar(ui.toolbar, this.toolManager, refreshUI);
+    this.palette = new PalettePanel(ui.colorPanel, this.state, refreshUI);
+    this.layerPanel = new LayerPanel(ui.layerPanel, this.state, refreshUI);
+    new ExportPanel(ui.exportPanel, this.state);
+    this.statusBar = new StatusBar(ui.statusBar);
+    // Palette panel hosts both FG/BG swatches and grid in colorPanel;
+    // We also render a minimal palette grid inside palettePanel for space.
+    new PalettePanel(ui.palettePanel, this.state, refreshUI);
+
     void this.loadLatestProject();
 
     this.syncToElementSize();
     window.addEventListener('resize', this.syncToElementSize);
     window.addEventListener('keydown', this.onKeyDown);
     this.bindPointerEvents();
+    this.refreshUI();
   }
 
   start(): void {
@@ -101,6 +136,8 @@ export class App {
     const snap = this.history.undo();
     if (snap === null) return false;
     this.state.restoreSnapshot(snap);
+    this.refreshUI();
+    this.autoSaver.schedule();
     return true;
   }
 
@@ -108,7 +145,30 @@ export class App {
     const snap = this.history.redo();
     if (snap === null) return false;
     this.state.restoreSnapshot(snap);
+    this.refreshUI();
+    this.autoSaver.schedule();
     return true;
+  }
+
+  private refreshUI(): void {
+    this.toolbar.render();
+    this.palette.render();
+    this.layerPanel.render();
+    this.updateStatus();
+  }
+
+  private updateStatus(): void {
+    this.statusBar.update({
+      width: this.state.activeCanvas.width,
+      height: this.state.activeCanvas.height,
+      zoom: this.viewport.zoom,
+      cursor: this.hoverPixel ?? undefined,
+      tool: this.toolManager.activeId ?? undefined,
+      layers: {
+        total: this.state.layers.count,
+        active: this.state.layers.activeIndex,
+      },
+    });
   }
 
   private async loadLatestProject(): Promise<void> {
@@ -124,6 +184,7 @@ export class App {
       applyProjectRecord(this.state, record);
       this.history.clear();
       this.history.push(this.state.takeSnapshot());
+      this.refreshUI();
     } catch (err) {
       console.warn('Failed to load project', err);
     }
@@ -148,6 +209,10 @@ export class App {
     this.canvasEl.addEventListener('pointerup', this.onPointerUp);
     this.canvasEl.addEventListener('pointercancel', this.onPointerUp);
     this.canvasEl.addEventListener('wheel', this.onWheel, { passive: false });
+    this.canvasEl.addEventListener('pointerleave', () => {
+      this.hoverPixel = null;
+      this.updateStatus();
+    });
   }
 
   private gridWidth(): number {
@@ -187,8 +252,14 @@ export class App {
       canvas: this.state.activeCanvas,
       foregroundColor: this.state.foregroundColor,
       backgroundColor: this.state.backgroundColor,
-      setForegroundColor: (c) => this.state.setForegroundColor(c),
-      setBackgroundColor: (c) => this.state.setBackgroundColor(c),
+      setForegroundColor: (c) => {
+        this.state.setForegroundColor(c);
+        this.refreshUI();
+      },
+      setBackgroundColor: (c) => {
+        this.state.setBackgroundColor(c);
+        this.refreshUI();
+      },
     };
   }
 
@@ -204,10 +275,15 @@ export class App {
 
   private readonly onPointerMove = (ev: PointerEvent): void => {
     const pt = this.toPixel(ev);
-    if (pt === null) return;
+    this.hoverPixel = pt;
+    if (pt === null) {
+      this.updateStatus();
+      return;
+    }
     this.lastPixel = pt;
     const button = App.toButton(ev) ?? 'left';
     this.toolManager.onPointerMove(this.buildContext(), { x: pt.x, y: pt.y, button });
+    this.updateStatus();
   };
 
   private readonly onPointerUp = (ev: PointerEvent): void => {
@@ -221,19 +297,7 @@ export class App {
     this.lastPixel = null;
     this.history.push(this.state.takeSnapshot());
     this.autoSaver.schedule();
-  };
-
-  private readonly onKeyDown = (e: KeyboardEvent): void => {
-    if (!(e.ctrlKey || e.metaKey)) return;
-    const k = e.key.toLowerCase();
-    if (k === 'z') {
-      e.preventDefault();
-      if (e.shiftKey) this.redo();
-      else this.undo();
-    } else if (k === 'y') {
-      e.preventDefault();
-      this.redo();
-    }
+    this.refreshUI();
   };
 
   private readonly onWheel = (ev: WheelEvent): void => {
@@ -241,6 +305,7 @@ export class App {
     const local = this.toLocal(ev);
     const delta = ev.deltaY > 0 ? -1 : 1;
     this.viewport.zoomAt(delta, local.x, local.y);
+    this.updateStatus();
   };
 
   private readonly tick = (): void => {
@@ -253,6 +318,7 @@ export class App {
         this.gridHeight(),
       );
       this.needsFit = false;
+      this.updateStatus();
     }
     this.renderer.clear();
     const region = this.viewport.getBlitRegion(this.gridWidth(), this.gridHeight());
@@ -285,6 +351,34 @@ export class App {
     if (w > 0 && h > 0) {
       this.renderer.resize(w, h);
       this.needsFit = true;
+    }
+  };
+
+  private readonly onKeyDown = (e: KeyboardEvent): void => {
+    const target = e.target as HTMLElement | null;
+    if (target !== null) {
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
+    }
+    if (e.ctrlKey || e.metaKey) {
+      const k = e.key.toLowerCase();
+      if (k === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) this.redo();
+        else this.undo();
+        return;
+      }
+      if (k === 'y') {
+        e.preventDefault();
+        this.redo();
+        return;
+      }
+      return;
+    }
+    const id = TOOL_SHORTCUTS[e.key.toLowerCase()];
+    if (id !== undefined && this.toolManager.registeredIds.includes(id)) {
+      this.toolManager.setActive(id);
+      this.refreshUI();
     }
   };
 }

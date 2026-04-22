@@ -12,7 +12,7 @@
     "exactOptionalPropertyTypes": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["DOM", "ES2020"],
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
     "sourceMap": true,

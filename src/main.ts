@@ -1,13 +1,12 @@
 import { App } from './app.js';
-
-const CANVAS_ID = 'app-canvas';
+import { buildUILayout } from './ui/UILayout.js';
 
 function bootstrap(): void {
-  const el = document.getElementById(CANVAS_ID);
-  if (!(el instanceof HTMLCanvasElement)) {
-    throw new Error(`Canvas element #${CANVAS_ID} not found`);
-  }
-  const app = new App(el);
+  const root = document.getElementById('app');
+  if (root === null) throw new Error('#app root element not found');
+
+  const refs = buildUILayout(root);
+  const app = new App(refs);
   app.start();
 }
 

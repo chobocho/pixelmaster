@@ -218,3 +218,26 @@
 **검증**
 
 - `npm test` 196건 모두 통과
+
+### Issue #12 — UI 레이아웃 + 패널
+
+**변경 사항**
+
+- `src/ui/formatStatusBar.ts` 추가: 사이즈/줌%/커서/도구/레이어 정보 포매터
+- `src/ui/UILayout.ts` 추가: 루트 아래 header / toolbar / canvas / right-panel(color, palette, layer, export) / status-bar 구조 생성
+- `src/ui/Toolbar.ts` 추가: 이모지 툴 버튼, active 상태 토글, 단축키 툴팁
+- `src/ui/PalettePanel.ts` 추가: FG/BG 스왓치, HEX 입력, 팔레트 그리드(좌=FG, 우=BG)
+- `src/ui/LayerPanel.ts` 추가: 역순(상단부터) 레이어 리스트, 가시성 토글, 투명도 슬라이더, +/− 버튼
+- `src/ui/ExportPanel.ts` 추가: 1×/2×/4×/8× PNG 다운로드 버튼
+- `src/ui/StatusBar.ts` 추가: formatStatusBar 래퍼
+- `src/main.ts` 리팩터링: 루트에서 `buildUILayout` → App 초기화
+- `src/app.ts`: UIRefs 받는 생성자, UI 패널 구성·refreshUI 파이프라인, P/E/F/I/L/R/O 단축키, 입력 필드 포커스 시 단축키 무시, hoverPixel 상태표시줄 연동
+- `index.html` 리팩터링: 루트 `#app` 하나로 단순화, 다크 테마 + 패널 CSS 전체 지정
+- `tsconfig.json`: `lib` 에 `DOM.Iterable` 추가 (NodeListOf iteration)
+- 테스트 6건 추가 (formatStatusBar)
+
+**검증**
+
+- `npm test` 202건 모두 통과
+- `npm run build` 성공
+- `python3 -m http.server 8001` 로 index.html / dist/main.js / dist/ui/* / data/default-palettes.json 모두 200 확인
