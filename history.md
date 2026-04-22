@@ -241,3 +241,21 @@
 - `npm test` 202건 모두 통과
 - `npm run build` 성공
 - `python3 -m http.server 8001` 로 index.html / dist/main.js / dist/ui/* / data/default-palettes.json 모두 200 확인
+
+### Issue #13 — 선택·이동 도구
+
+**변경 사항**
+
+- `src/editor/Selection.ts` 추가: 사각형 선택 상태, setRect(defensive copy) / clear / contains / isActive
+- `src/tools/Tool.ts`: `ToolContext` 에 optional `selection` 필드 추가
+- `src/tools/SelectTool.ts` 추가: 드래그 시 시작/끝 클램핑 + 정규화로 선택 사각형 생성
+- `src/tools/MoveTool.ts` 추가: pointerdown 시 원본 스냅샷 + 선택 영역 픽셀 lift, 이동 중 preview, pointerup 시 확정 + 선택 영역도 같이 이동
+- `src/renderer/MarqueeRenderer.ts` 추가: 흑/백 엇갈림 점선(개미 행진) 외곽선
+- `src/editor/EditorState.ts`: `readonly selection: Selection` 보관
+- `src/app.ts`: SelectTool / MoveTool 등록, buildContext 에 selection 주입, tick 마지막에 MarqueeRenderer 렌더, S / M 단축키
+- `src/ui/Toolbar.ts`: Select / Move 버튼 추가
+- 테스트 13건 추가 (selection 4, selectTool 5, moveTool 4)
+
+**검증**
+
+- `npm test` 215건 모두 통과

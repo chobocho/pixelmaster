@@ -16,6 +16,8 @@ const TOOL_BUTTONS: readonly ToolButton[] = [
   { id: 'line', emoji: '📏', label: 'Line', shortcut: 'L' },
   { id: 'rect', emoji: '▭', label: 'Rect', shortcut: 'R' },
   { id: 'ellipse', emoji: '○', label: 'Ellipse', shortcut: 'O' },
+  { id: 'select', emoji: '⬚', label: 'Select', shortcut: 'S' },
+  { id: 'move', emoji: '✋', label: 'Move', shortcut: 'M' },
 ];
 
 export class Toolbar {

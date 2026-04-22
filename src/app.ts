@@ -13,6 +13,9 @@ import { EyedropperTool } from './tools/EyedropperTool.js';
 import { LineTool } from './tools/LineTool.js';
 import { RectTool } from './tools/RectTool.js';
 import { EllipseTool } from './tools/EllipseTool.js';
+import { SelectTool } from './tools/SelectTool.js';
+import { MoveTool } from './tools/MoveTool.js';
+import { MarqueeRenderer } from './renderer/MarqueeRenderer.js';
 import type { PointerButton, ToolContext, ToolId } from './tools/Tool.js';
 import { mapToPixel } from './ui/pointerMapping.js';
 import { HistoryManager } from './editor/HistoryManager.js';
@@ -40,6 +43,8 @@ const TOOL_SHORTCUTS: Readonly<Record<string, ToolId>> = {
   l: 'line',
   r: 'rect',
   o: 'ellipse',
+  s: 'select',
+  m: 'move',
 };
 
 export class App {
@@ -48,6 +53,7 @@ export class App {
   private readonly blitter: PixelBlitter;
   private readonly checker: CheckerboardRenderer;
   private readonly grid: GridRenderer;
+  private readonly marquee: MarqueeRenderer;
   private readonly viewport: Viewport;
   private readonly state: EditorState;
   private readonly toolManager: ToolManager;
@@ -77,6 +83,7 @@ export class App {
     this.blitter = new PixelBlitter();
     this.checker = new CheckerboardRenderer();
     this.grid = new GridRenderer();
+    this.marquee = new MarqueeRenderer();
     this.viewport = new Viewport();
     this.state = new EditorState(DEFAULT_SIZE);
     this.toolManager = new ToolManager();
@@ -87,6 +94,8 @@ export class App {
     this.toolManager.register(new LineTool());
     this.toolManager.register(new RectTool());
     this.toolManager.register(new EllipseTool());
+    this.toolManager.register(new SelectTool());
+    this.toolManager.register(new MoveTool());
     this.toolManager.setActive('pencil');
 
     this.history = new HistoryManager<EditorSnapshot>();
@@ -252,6 +261,7 @@ export class App {
       canvas: this.state.activeCanvas,
       foregroundColor: this.state.foregroundColor,
       backgroundColor: this.state.backgroundColor,
+      selection: this.state.selection,
       setForegroundColor: (c) => {
         this.state.setForegroundColor(c);
         this.refreshUI();
@@ -340,6 +350,9 @@ export class App {
         this.gridHeight(),
         this.viewport.zoom,
       );
+    }
+    if (this.state.selection.isActive) {
+      this.marquee.render(this.renderer.context, region, this.state.selection, this.viewport.zoom);
     }
     this.rafHandle = requestAnimationFrame(this.tick);
   };

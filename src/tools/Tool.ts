@@ -1,5 +1,6 @@
 import type { PixelCanvas } from '../editor/PixelCanvas.js';
 import type { RGBA } from '../color/Color.js';
+import type { Selection } from '../editor/Selection.js';
 
 export type PointerButton = 'left' | 'right' | 'middle';
 
@@ -28,6 +29,8 @@ export interface ToolContext {
   readonly setForegroundColor?: (color: RGBA) => void;
   /** 배경색 갱신. 스포이드 등에서 사용. */
   readonly setBackgroundColor?: (color: RGBA) => void;
+  /** 선택 영역(있을 경우). Select/Move 도구가 사용. */
+  readonly selection?: Selection | undefined;
 }
 
 export interface Tool {

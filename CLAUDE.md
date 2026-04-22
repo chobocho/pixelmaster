@@ -289,7 +289,7 @@ export class Renderer {
 | 10 | PNG 내보내기 (원본 + 스케일업) | ✅ DONE |
 | 11 | IndexedDB 자동저장 + 이어하기 | ✅ DONE |
 | 12 | UI 레이아웃 + 패널 리사이즈 | ✅ DONE |
-| 13 | 선택·이동 도구 | 🔲 TODO |
+| 13 | 선택·이동 도구 | ✅ DONE |
 | 14 | GIF 내보내기 (애니메이션) | 🔲 TODO |
 | 15 | 단축키 시스템 | 🔲 TODO |
 

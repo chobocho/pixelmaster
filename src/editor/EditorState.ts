@@ -3,6 +3,7 @@ import { PixelCanvas } from './PixelCanvas.js';
 import { LayerManager } from './LayerManager.js';
 import { compositeOver } from './composite.js';
 import type { EditorSnapshot } from './snapshot.js';
+import { Selection } from './Selection.js';
 import type { RGBA } from '../color/Color.js';
 import { PaletteManager } from '../color/PaletteManager.js';
 import { DEFAULT_PALETTE } from '../color/defaultPalette.js';
@@ -11,6 +12,7 @@ import { DEFAULT_PALETTE } from '../color/defaultPalette.js';
 export class EditorState {
   readonly layers: LayerManager;
   readonly palette: PaletteManager;
+  readonly selection: Selection = new Selection();
 
   foregroundColor: RGBA = { r: 0, g: 0, b: 0, a: 255 };
   backgroundColor: RGBA = { r: 255, g: 255, b: 255, a: 255 };
