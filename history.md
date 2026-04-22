@@ -131,3 +131,19 @@
 **검증**
 
 - `npm test` 100건 모두 통과
+
+### Issue #7 — 선·사각형·원 도구
+
+**변경 사항**
+
+- `src/editor/PixelCanvas.ts`: `copyFrom(other)` 메서드 추가 (스냅샷 복원용)
+- `src/tools/strokeRect.ts` 추가: 외곽선 전용 (내부 미충전), degenerate(1점/가로선/세로선) 처리
+- `src/tools/strokeEllipse.ts` 추가: Alois Zingl 의 bbox 기반 정수 미드포인트 타원
+- `src/tools/ShapeToolBase.ts` 추가: 공용 스냅샷 → 프리뷰 → 커밋 상태 머신
+- `src/tools/LineTool.ts`, `RectTool.ts`, `EllipseTool.ts` 추가: ShapeToolBase 상속, 좌=전경 / 우=배경
+- `src/app.ts`: Line/Rect/Ellipse 등록, pointerup 에 lastPixel fallback (뷰포트 밖에서 up 되어도 마지막 유효 위치로 확정)
+- 테스트 21건 추가 (strokeRect 5, strokeEllipse 5, shapeTools 8, copyFrom 3)
+
+**검증**
+
+- `npm test` 121건 모두 통과

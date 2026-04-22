@@ -80,6 +80,14 @@ export class PixelCanvas {
     return copy;
   }
 
+  /** 같은 사이즈의 다른 PixelCanvas 데이터를 복사해 덮어쓴다. */
+  copyFrom(other: PixelCanvas): void {
+    if (other.sizeValue !== this.sizeValue) {
+      throw new Error(`Size mismatch: ${other.sizeValue} vs ${this.sizeValue}`);
+    }
+    this.dataArr.set(other.dataArr);
+  }
+
   /**
    * 사이즈를 변경한다.
    * - `preserve`: 좌상단을 기준으로 기존 픽셀을 복사한다.

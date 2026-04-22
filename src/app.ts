@@ -10,6 +10,9 @@ import { PencilTool } from './tools/PencilTool.js';
 import { EraserTool } from './tools/EraserTool.js';
 import { FillTool } from './tools/FillTool.js';
 import { EyedropperTool } from './tools/EyedropperTool.js';
+import { LineTool } from './tools/LineTool.js';
+import { RectTool } from './tools/RectTool.js';
+import { EllipseTool } from './tools/EllipseTool.js';
 import type { PointerButton, ToolContext } from './tools/Tool.js';
 import { mapToPixel } from './ui/pointerMapping.js';
 
@@ -28,6 +31,7 @@ export class App {
   private running = false;
   private rafHandle = 0;
   private needsFit = true;
+  private lastPixel: { x: number; y: number } | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
@@ -43,6 +47,9 @@ export class App {
     this.toolManager.register(new EraserTool());
     this.toolManager.register(new FillTool());
     this.toolManager.register(new EyedropperTool());
+    this.toolManager.register(new LineTool());
+    this.toolManager.register(new RectTool());
+    this.toolManager.register(new EllipseTool());
     this.toolManager.setActive('pencil');
 
     this.syncToElementSize();
@@ -125,27 +132,27 @@ export class App {
     const pt = this.toPixel(ev);
     if (button === null || pt === null) return;
     this.canvasEl.setPointerCapture(ev.pointerId);
+    this.lastPixel = pt;
     this.toolManager.onPointerDown(this.buildContext(), { x: pt.x, y: pt.y, button });
   };
 
   private readonly onPointerMove = (ev: PointerEvent): void => {
     const pt = this.toPixel(ev);
     if (pt === null) return;
+    this.lastPixel = pt;
     const button = App.toButton(ev) ?? 'left';
     this.toolManager.onPointerMove(this.buildContext(), { x: pt.x, y: pt.y, button });
   };
 
   private readonly onPointerUp = (ev: PointerEvent): void => {
-    const button = App.toButton(ev) ?? 'left';
-    const pt = this.toPixel(ev);
+    const pt = this.toPixel(ev) ?? this.lastPixel;
     if (this.canvasEl.hasPointerCapture(ev.pointerId)) {
       this.canvasEl.releasePointerCapture(ev.pointerId);
     }
-    this.toolManager.onPointerUp(this.buildContext(), {
-      x: pt?.x ?? 0,
-      y: pt?.y ?? 0,
-      button,
-    });
+    if (pt === null) return;
+    const button = App.toButton(ev) ?? 'left';
+    this.toolManager.onPointerUp(this.buildContext(), { x: pt.x, y: pt.y, button });
+    this.lastPixel = null;
   };
 
   private readonly onWheel = (ev: WheelEvent): void => {
