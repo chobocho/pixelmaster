@@ -9,7 +9,7 @@ import type { LayerSnapshot } from './snapshot.js';
  * 최소 1개 레이어를 항상 유지한다.
  */
 export class LayerManager {
-  private readonly size: CanvasSize;
+  private size: CanvasSize;
   private layers: Layer[] = [];
   private activeIndexValue = -1;
   private nextIdSeq = 1;
@@ -130,6 +130,14 @@ export class LayerManager {
 
   get canvasSize(): CanvasSize {
     return this.size;
+  }
+
+  /** 모든 레이어를 newSize 로 리사이즈한다. mode 는 각 레이어에 전달. */
+  resize(newSize: CanvasSize, mode: 'preserve' | 'clear'): void {
+    for (const layer of this.layers) {
+      layer.pixels.resize(newSize, mode);
+    }
+    this.size = newSize;
   }
 
   /** 스냅샷에서 레이어 목록을 완전히 재구성한다. */

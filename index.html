@@ -190,6 +190,71 @@
     }
     button { cursor: pointer; }
 
+    .size-select {
+      width: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 4px 6px;
+      font-size: 13px;
+    }
+
+    .pm-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .pm-modal-card {
+      background: var(--panel-2);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 18px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .pm-modal-title {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+    }
+    .pm-modal-message {
+      margin: 0 0 14px 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #bbb;
+    }
+    .pm-modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .pm-modal-button {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      background: var(--panel);
+      color: var(--fg);
+    }
+    .pm-modal-button-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .pm-modal-button-danger {
+      background: #b93b3b;
+      border-color: #862828;
+      color: white;
+    }
+
     /* 좁은 화면 (폴드 접힌 상태, 좁은 태블릿 모드 등) 대응.
        원칙: 본문 스크롤 없음, 뷰포트 안에 모든 UI 가 항상 보여야 한다.
        - 툴바: 상단 가로 한 줄 (넘치면 툴바 내부만 가로 스크롤)

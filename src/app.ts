@@ -34,6 +34,9 @@ import { PalettePanel } from './ui/PalettePanel.js';
 import { LayerPanel } from './ui/LayerPanel.js';
 import { ExportPanel } from './ui/ExportPanel.js';
 import { StatusBar } from './ui/StatusBar.js';
+import { SizePanel } from './ui/SizePanel.js';
+import { showModal } from './ui/Modal.js';
+import { PngExporter } from './io/PngExporter.js';
 
 const DEFAULT_SIZE: CanvasSize = 32;
 const TOOL_KEY_BINDINGS: ReadonlyArray<readonly [string, ToolId]> = [
@@ -67,6 +70,7 @@ export class App {
   private readonly palette: PalettePanel;
   private readonly layerPanel: LayerPanel;
   private readonly statusBar: StatusBar;
+  private readonly sizePanel: SizePanel;
 
   private projectId = 'default';
   private projectName = 'Untitled';
@@ -116,6 +120,9 @@ export class App {
     // Palette panel hosts both FG/BG swatches and grid in colorPanel;
     // We also render a minimal palette grid inside palettePanel for space.
     new PalettePanel(ui.palettePanel, this.state, refreshUI);
+    this.sizePanel = new SizePanel(ui.sizePanel, this.state.size, (next) => {
+      this.requestSizeChange(next);
+    });
 
     void this.loadLatestProject();
 
@@ -166,7 +173,61 @@ export class App {
     this.toolbar.render();
     this.palette.render();
     this.layerPanel.render();
+    this.sizePanel.render(this.state.size);
     this.updateStatus();
+  }
+
+  /**
+   * 사이즈 변경 요청을 처리한다.
+   * - 현재 캔버스가 비어 있으면 즉시 변경
+   * - 내용이 있으면 저장 여부를 묻는 모달 표시
+   */
+  private requestSizeChange(newSize: CanvasSize): void {
+    if (newSize === this.state.size) return;
+    if (this.state.isEmpty()) {
+      this.applyCanvasSize(newSize);
+      return;
+    }
+    const previousSize = this.state.size;
+    showModal({
+      title: '캔버스 크기 변경',
+      message: `크기를 ${previousSize}×${previousSize} 에서 ${newSize}×${newSize} 로 바꾸면 현재 작업이 초기화됩니다.`,
+      buttons: [
+        {
+          label: 'PNG 저장 후 변경',
+          style: 'primary',
+          onClick: () => {
+            new PngExporter().triggerDownload(
+              this.state,
+              1,
+              `pixelmaster-${previousSize}x${previousSize}.png`,
+            );
+            this.applyCanvasSize(newSize);
+          },
+        },
+        {
+          label: '저장 없이 변경',
+          style: 'danger',
+          onClick: () => this.applyCanvasSize(newSize),
+        },
+        {
+          label: '취소',
+          style: 'secondary',
+          onClick: () => {
+            this.sizePanel.render(this.state.size);
+          },
+        },
+      ],
+    });
+  }
+
+  private applyCanvasSize(newSize: CanvasSize): void {
+    this.state.resize(newSize, 'clear');
+    this.history.clear();
+    this.history.push(this.state.takeSnapshot());
+    this.needsFit = true;
+    this.autoSaver.schedule();
+    this.refreshUI();
   }
 
   private updateStatus(): void {

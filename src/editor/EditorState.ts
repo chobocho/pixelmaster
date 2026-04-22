@@ -17,8 +17,8 @@ export class EditorState {
   foregroundColor: RGBA = { r: 0, g: 0, b: 0, a: 255 };
   backgroundColor: RGBA = { r: 255, g: 255, b: 255, a: 255 };
 
-  private readonly sizeValue: CanvasSize;
-  private readonly compositeBufferValue: PixelCanvas;
+  private sizeValue: CanvasSize;
+  private compositeBufferValue: PixelCanvas;
 
   constructor(size: CanvasSize) {
     this.sizeValue = size;
@@ -85,5 +85,30 @@ export class EditorState {
       activeIndex: snap.activeIndex,
       layers: snap.layers,
     });
+  }
+
+  /** 모든 레이어가 완전 투명(알파=0)인지 확인. */
+  isEmpty(): boolean {
+    for (const layer of this.layers.all) {
+      const data = layer.pixels.data;
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 캔버스 사이즈를 변경한다.
+   * - `clear` (기본): 모든 레이어를 새 크기의 투명 캔버스로 초기화
+   * - `preserve`: 좌상단 기준으로 기존 픽셀을 복사하고 나머지는 투명/잘림
+   * 선택 영역은 좌표 유효성을 보장할 수 없어 해제된다.
+   */
+  resize(newSize: CanvasSize, mode: 'clear' | 'preserve' = 'clear'): void {
+    if (newSize === this.sizeValue) return;
+    this.layers.resize(newSize, mode);
+    this.sizeValue = newSize;
+    this.compositeBufferValue = new PixelCanvas(newSize);
+    this.selection.clear();
   }
 }

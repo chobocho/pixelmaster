@@ -3,6 +3,7 @@ export interface UIRefs {
   toolbar: HTMLElement;
   canvas: HTMLCanvasElement;
   canvasWrap: HTMLElement;
+  sizePanel: HTMLElement;
   colorPanel: HTMLElement;
   palettePanel: HTMLElement;
   layerPanel: HTMLElement;
@@ -25,11 +26,12 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   canvasWrap.appendChild(canvas);
 
   const rightPanel = create('aside', 'pm-right-panel');
+  const sizePanel = create('section', 'pm-size-panel');
   const colorPanel = create('section', 'pm-color-panel');
   const palettePanel = create('section', 'pm-palette-panel');
   const layerPanel = create('section', 'pm-layer-panel');
   const exportPanel = create('section', 'pm-export-panel');
-  rightPanel.append(colorPanel, palettePanel, layerPanel, exportPanel);
+  rightPanel.append(sizePanel, colorPanel, palettePanel, layerPanel, exportPanel);
 
   main.append(toolbar, canvasWrap, rightPanel);
 
@@ -42,6 +44,7 @@ export function buildUILayout(root: HTMLElement): UIRefs {
     toolbar,
     canvas,
     canvasWrap,
+    sizePanel,
     colorPanel,
     palettePanel,
     layerPanel,
