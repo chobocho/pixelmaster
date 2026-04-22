@@ -147,3 +147,18 @@
 **검증**
 
 - `npm test` 121건 모두 통과
+
+### Issue #8 — 레이어 시스템
+
+**변경 사항**
+
+- `src/editor/composite.ts` 추가: `compositeOver(src, dest, opacity)` 정규 Porter-Duff source-over
+- `src/editor/Layer.ts` 추가: id/name/visible/opacity/pixels(PixelCanvas)
+- `src/editor/LayerManager.ts` 추가: add/remove/move/setActive/setVisible/setOpacity, mergeDown(비가시 시 compose 생략), flattenAll, activeIndex 재계산 규칙 구현
+- `src/editor/EditorState.ts` 리팩터링: 단일 PixelCanvas → LayerManager + compositeBuffer, activeCanvas / updateComposite() 노출
+- `src/app.ts`: tick 에서 updateComposite → compositeBuffer 블릿, buildContext 가 activeCanvas 사용
+- 테스트 25건 추가 (composite 6, layerManager 14, editorState 5)
+
+**검증**
+
+- `npm test` 146건 모두 통과

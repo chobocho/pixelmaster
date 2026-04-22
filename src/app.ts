@@ -85,11 +85,11 @@ export class App {
   }
 
   private gridWidth(): number {
-    return this.state.canvas.width;
+    return this.state.activeCanvas.width;
   }
 
   private gridHeight(): number {
-    return this.state.canvas.height;
+    return this.state.activeCanvas.height;
   }
 
   private toLocal(ev: { clientX: number; clientY: number }): { x: number; y: number } {
@@ -118,7 +118,7 @@ export class App {
 
   private buildContext(): ToolContext {
     return {
-      canvas: this.state.canvas,
+      canvas: this.state.activeCanvas,
       foregroundColor: this.state.foregroundColor,
       backgroundColor: this.state.backgroundColor,
       setForegroundColor: (c) => this.state.setForegroundColor(c),
@@ -176,9 +176,10 @@ export class App {
     this.renderer.clear();
     const region = this.viewport.getBlitRegion(this.gridWidth(), this.gridHeight());
     this.checker.render(this.renderer.context, region);
+    this.state.updateComposite();
     this.blitter.blit(
       this.renderer.context,
-      this.state.canvas,
+      this.state.compositeBuffer,
       region.x,
       region.y,
       region.width,
