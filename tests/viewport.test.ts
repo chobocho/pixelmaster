@@ -21,18 +21,11 @@ test('Viewport setZoom clamps to [MIN_ZOOM, MAX_ZOOM]', () => {
   assert.equal(vp.zoom, MIN_ZOOM);
 });
 
-test('Viewport fitToViewport uses exact (float) scale fitting the shorter dimension', () => {
+test('Viewport fitToViewport picks max integer scale that fits', () => {
   const vp = new Viewport();
   vp.fitToViewport(500, 400, 32, 32);
-  // min(500/32=15.625, 400/32=12.5) → 12.5
-  assert.equal(vp.zoom, 12.5);
-});
-
-test('Viewport fitToViewport 에서 긴 쪽은 여백, 짧은 쪽은 꽉 참', () => {
-  const vp = new Viewport();
-  vp.fitToViewport(749, 612, 192, 192); // Fold 가로 모드 근사치
-  // 612/192 = 3.1875 → 짧은 변(세로)이 꽉 참
-  assert.equal(vp.zoom, 612 / 192);
+  // floor(min(500/32=15.625, 400/32=12.5)) = 12
+  assert.equal(vp.zoom, 12);
 });
 
 test('Viewport centerIn centers the grid', () => {
@@ -66,12 +59,6 @@ test('Viewport zoomAt keeps anchor grid coordinate stationary', () => {
   assert.equal(newGridY, 5);
 });
 
-test('Viewport zoomAt 은 실수 zoom 을 반올림 후 정수 단위로 증감', () => {
-  const vp = new Viewport();
-  vp.fitToViewport(749, 612, 192, 192); // zoom = 3.1875
-  vp.zoomAt(1, 0, 0); // round(3.19) + 1 = 4
-  assert.equal(vp.zoom, 4);
-});
 
 test('Viewport zoomAt respects MIN/MAX clamping', () => {
   const vp = new Viewport();

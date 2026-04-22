@@ -158,6 +158,9 @@ export class App {
       this.toggleGrid();
       this.refreshUI();
     });
+    ui.zoomInButton.addEventListener('click', () => this.zoomBy(1));
+    ui.zoomOutButton.addEventListener('click', () => this.zoomBy(-1));
+    ui.zoomFitButton.addEventListener('click', () => this.fitZoom());
 
     void this.loadLatestProject();
 
@@ -204,6 +207,25 @@ export class App {
 
   toggleGrid(): void {
     this.viewport.toggleGrid();
+  }
+
+  /** 헤더 +/− 버튼에서 호출. 캔버스 중심 기준으로 정수 줌 증감. */
+  zoomBy(delta: number): void {
+    const cx = this.renderer.cssWidth / 2;
+    const cy = this.renderer.cssHeight / 2;
+    this.viewport.zoomAt(delta, cx, cy);
+    this.updateStatus();
+  }
+
+  /** 헤더 fit 버튼에서 호출. 뷰포트에 꽉 맞게 재정렬. */
+  fitZoom(): void {
+    this.viewport.fitToViewport(
+      this.renderer.cssWidth,
+      this.renderer.cssHeight,
+      this.gridWidth(),
+      this.gridHeight(),
+    );
+    this.updateStatus();
   }
 
   undo(): boolean {

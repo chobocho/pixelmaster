@@ -1,6 +1,9 @@
 export interface UIRefs {
   header: HTMLElement;
   menuButton: HTMLButtonElement;
+  zoomOutButton: HTMLButtonElement;
+  zoomFitButton: HTMLButtonElement;
+  zoomInButton: HTMLButtonElement;
   undoButton: HTMLButtonElement;
   redoButton: HTMLButtonElement;
   canvas: HTMLCanvasElement;
@@ -25,9 +28,21 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   const menuButton = iconButton('☰', 'Menu');
   const title = create('span', 'pm-title', 'PixelMaster');
   const headerSpacer = create('span', 'pm-header-spacer');
+  const zoomOutButton = iconButton('−', 'Zoom out');
+  const zoomFitButton = iconButton('⊡', 'Fit to screen');
+  const zoomInButton = iconButton('+', 'Zoom in');
   const undoButton = iconButton('↶', 'Undo');
   const redoButton = iconButton('↷', 'Redo');
-  header.append(menuButton, title, headerSpacer, undoButton, redoButton);
+  header.append(
+    menuButton,
+    title,
+    headerSpacer,
+    zoomOutButton,
+    zoomFitButton,
+    zoomInButton,
+    undoButton,
+    redoButton,
+  );
 
   const canvasWrap = create('main', 'pm-canvas-wrap');
   const canvas = document.createElement('canvas');
@@ -53,6 +68,9 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   return {
     header,
     menuButton,
+    zoomOutButton,
+    zoomFitButton,
+    zoomInButton,
     undoButton,
     redoButton,
     canvas,
