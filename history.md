@@ -32,3 +32,34 @@
 - `npm run typecheck` 통과 (src + tests 모두)
 - `npm test` 8건 모두 통과
 - `python3 -m http.server 8001` 로 `index.html`, `dist/main.js`, `dist/app.js`, `dist/renderer/Renderer.js` 200 OK 응답 확인
+
+### Issue #2 — PixelCanvas 모델 + 캔버스 사이즈 6종
+
+**변경 사항**
+
+- `src/editor/CanvasSize.ts` 추가
+  - `CANVAS_SIZES = [10, 16, 20, 25, 32, 64]` as const, `CanvasSize` 타입
+  - `DEFAULT_ZOOM`: 사이즈별 기본 줌 배율 Record
+  - 상수: `MAX_UNDO_STEPS=50`, `TARGET_FPS=60`, `MAX_PALETTE_COLORS=32`, `MAX_ZOOM=32`, `MIN_ZOOM=1`
+  - 런타임 타입 가드 `isCanvasSize(n)` 추가
+- `src/color/Color.ts` 추가
+  - `RGBA` 인터페이스 (r/g/b/a 각 0..255, readonly)
+  - `TRANSPARENT` 상수
+- `src/editor/PixelCanvas.ts` 추가
+  - Uint8ClampedArray 기반 정사각형 픽셀 캔버스 (크기 = size²×4 바이트)
+  - getPixel/setPixel: 범위 밖 좌표 시 RangeError
+  - fill, clear, clone, isInBounds
+  - resize(newSize, mode): `preserve` 는 좌상단 기준 복사(확대 시 나머지 투명, 축소 시 우/하단 잘림), `clear` 는 전체 투명화, 같은 사이즈는 no-op
+- 테스트 16건 추가 (`tests/canvasSize.test.ts` 4건, `tests/pixelCanvas.test.ts` 12건)
+  - 6개 사이즈 전체 초기화/범위 검증
+  - setPixel/getPixel round-trip, 범위 밖 throw
+  - fill/clear/clone 독립성
+  - resize preserve 확대·축소, clear 모드, same-size no-op
+  - Uint8ClampedArray 자동 클램핑 동작 확인
+- CLAUDE.md: Issue #2 상태 → `DONE`
+
+**검증**
+
+- `npm test` 24건(Issue #1 8건 + Issue #2 16건) 모두 통과
+- `npm run typecheck` 통과 (strict / noUnusedLocals / exactOptionalPropertyTypes 포함)
+- `npm run build` 통과
