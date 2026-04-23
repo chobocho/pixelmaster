@@ -409,9 +409,13 @@
 
     /* ── Large viewport / unfolded foldables ──
        화면 폭이 넓은 세로 펼침 상태와 가로 모드 모두에서 하단 UI 를 양옆 컬럼으로 옮겨
-       캔버스 높이를 확보한다. */
+       캔버스 높이를 확보한다.
+       선택자에 #app 을 함께 쓰는 이유: 기본 규칙이 `#app, .pm-root` (ID 특이도)
+       로 `display: flex` 를 지정하므로, 단순히 `.pm-root` 만으로는 ID 특이도에
+       밀려 `display: grid` 가 적용되지 않는다. 폴드7 펼침 화면에서 그리드 레이아웃이
+       깨지고 팔레트가 좌측에 걸리며 도구바가 화면 밖으로 밀리는 원인이었다. */
     @media (min-width: 640px), (min-aspect-ratio: 1/1) {
-      .pm-root {
+      #app, .pm-root {
         display: grid;
         grid-template-rows: auto 1fr auto;
         grid-template-columns: auto 1fr auto;
