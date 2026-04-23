@@ -26,7 +26,7 @@ export function buildUILayout(root: HTMLElement): UIRefs {
   root.classList.add('pm-root');
 
   const header = create('header', 'pm-header');
-  const menuButton = iconButton('☰', 'Menu');
+  const menuButton = iconButton('⊞', 'Toggle grid');
   const title = create('span', 'pm-title', 'PixelMaster');
   const headerSpacer = create('span', 'pm-header-spacer');
   const zoomOutButton = iconButton('−', 'Zoom out');
